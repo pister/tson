@@ -1,0 +1,35 @@
+# define
+<root> ::= <define>
+<define> ::= <property-define> | <list-define>
+<property-define> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
+<list-define> ::= TOKEN_LIST_BEGIN <list-content> TOKEN_LIST_END
+<list-content> ::= (<item> (TOKEN_COMMA <item> )*)? TOKEN_COMMA?
+<property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*)? TOKEN_COMMA?
+<name-item-pair> ::= <literal> TOKEN_COLON <item>
+<item> ::= <element> | <define>
+<element> ::= <type> TOKEN_AT <value>
+<type> ::= TOKEN_BOOL | TOKEN_INT8 | TOKEN_INT16 | TOKEN_INT32 | TOKEN_INT64 | TOKEN_FLOAT32 | TOKEN_FLOAT64 | TOKEN_STRING | TOKEN_DATE | TOKEN_BINARY
+<value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
+# token
+TOKEN_PROPERTY_BEGIN ::= '{'
+TOKEN_PROPERTY_END ::= '}'
+TOKEN_LIST_BEGIN ::= '['
+TOKEN_LIST_END ::= ']'
+TOKEN_COMMA ::= ','
+TOKEN_COLON ::= ':'
+TOKEN_AT ::= '@'
+TOKEN_BOOL ::= 'bool'
+TOKEN_INT8 ::= 'i8'
+TOKEN_INT16 ::= 'i16'
+TOKEN_INT32 ::= 'i32'
+TOKEN_INT64 ::= 'i64'
+TOKEN_FLOAT32 ::= 'f32'
+TOKEN_FLOAT64 ::= 'f64'
+TOKEN_STRING ::= 'str'
+TOKEN_DATE  ::= 'date'
+TOKEN_BINARY ::= 'bin'
+TOKEN_VALUE_INT ::= ['1'-'9']['0'-'9']*
+TOKEN_VALUE_FLOAT ::= ('0' '.' [1-9][0-9]*) | ( ['1'-'9']['0'-'9']* '.' ['0'-'9']* )
+TOKEN_VALUE_TRUE ::= 'true'
+TOKEN_VALUE_FALSE ::= 'false'
+TOKEN_VALUE_STRING ::= '"' (^" | ^('\''"'))* '"'

@@ -1,0 +1,35 @@
+package com.github.pister.tson.common;
+
+
+import java.lang.reflect.Array;
+
+/**
+ * @author pister 2011-12-22 10:11:30
+ */
+public class ArrayUtil {
+
+	public static boolean isEmpty(Object[] array) {
+		if (array == null || array.length == 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static int getLength(Object array) {
+		if (array == null) {
+			return 0;
+		}
+		if (!array.getClass().isArray()) {
+			return 0;
+		}
+		return Array.getLength(array);
+	}
+	
+	public static int getLength(Object[] array) {
+		if (array == null || array.length == 0) {
+			return 0;
+		}
+		return array.length;
+	}
+	
+}
