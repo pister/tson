@@ -13,7 +13,6 @@ public class TsonObject {
 
     private Item root;
 
-
     public TsonObject(Item root) {
         this.root = root;
     }

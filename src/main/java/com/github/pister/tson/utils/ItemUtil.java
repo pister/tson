@@ -1,5 +1,8 @@
 package com.github.pister.tson.utils;
 
+import com.github.pister.tson.access.ObjectVisitor;
+import com.github.pister.tson.access.property.ObjectUtil;
+import com.github.pister.tson.access.property.PropertyObjectVisitor;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.common.Types;
 import com.github.pister.tson.models.Item;
@@ -13,6 +16,8 @@ import java.util.*;
 public final  class ItemUtil {
 
     private ItemUtil() {}
+
+    private static final ObjectVisitor objectVisitor  = new PropertyObjectVisitor();
 
     public static Item wrapItem(Object o) {
         if (o == null) {
@@ -43,7 +48,7 @@ public final  class ItemUtil {
             return arrayToItem(o, o.getClass().getComponentType());
         }
         // plain object
-        Map<String, Object> properties = ObjectUtil.objectPropertiesToMap(o);
+        Map<String, Object> properties = objectVisitor.getFields(o);
         return mapToItem(properties, o.getClass().getName());
     }
 

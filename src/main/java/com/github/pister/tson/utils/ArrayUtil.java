@@ -10,6 +10,8 @@ public final class ArrayUtil {
 
 	private ArrayUtil() {}
 
+	public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
 	public static boolean isEmpty(Object[] array) {
 		if (array == null || array.length == 0) {
 			return true;

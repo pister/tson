@@ -1,6 +1,7 @@
-package com.github.pister.tson.utils;
+package com.github.pister.tson.access.property;
 
-import com.github.pister.tson.common.Property;
+import com.github.pister.tson.utils.ArrayUtil;
+import com.github.pister.tson.utils.StringUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,8 +14,6 @@ import java.util.Map;
 public final class ObjectUtil {
 
     private ObjectUtil() {}
-
-    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     public static Map<String, Object> objectPropertiesToMap(Object object) {
         if (object == null) {

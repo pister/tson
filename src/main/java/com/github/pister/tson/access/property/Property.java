@@ -1,9 +1,11 @@
-package com.github.pister.tson.common;
+package com.github.pister.tson.access.property;
 
-import com.github.pister.tson.utils.ObjectUtil;
+import com.github.pister.tson.utils.ArrayUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Created by songlihuang on 2020/1/6.
@@ -32,6 +34,7 @@ public class Property {
 
     /**
      * 是否可读
+     *
      * @return
      */
     public boolean isReadable() {
@@ -40,62 +43,65 @@ public class Property {
 
     /**
      * 是否可写
+     *
      * @return
      */
     public boolean isWritable() {
         return writeMethod != null;
     }
 
-    /**
-     * 属性名
-     * @return
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * 获取属性对应的class
-     * @return
-     */
-    public Class getPropertyClass() {
-        return propertyClass;
-    }
 
     /**
      * 获取目标对象的属性值
+     *
      * @param owner
      * @return
      */
-    public Object getValue(Object owner) {
+    public Object getValue(final Object owner) {
         if (!isReadable()) {
             throw new UnsupportedOperationException("can not read the property: " + name);
         }
-        try {
-            return readMethod.invoke(owner, ObjectUtil.EMPTY_OBJECT_ARRAY);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getTargetException());
-        }
+        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                try {
+                    return readMethod.invoke(owner, ArrayUtil.EMPTY_OBJECT_ARRAY);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e.getTargetException());
+                }
+            }
+        });
     }
 
     /**
      * 设置目标对象的属性值
+     *
      * @param owner
      * @param newValue
      */
-    public void setValue(Object owner, Object newValue) {
+    public void setValue(final Object owner, final Object newValue) {
         if (!isWritable()) {
             throw new UnsupportedOperationException("can not write the property: " + name);
         }
-        try {
-            writeMethod.invoke(owner, new Object[] { newValue });
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getTargetException());
-        }
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                try {
+                    writeMethod.invoke(owner, new Object[]{newValue});
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e.getTargetException());
+                }
+                return null;
+            }
+        });
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Method getReadMethod() {

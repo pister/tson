@@ -23,6 +23,9 @@ public class Item {
 
     private String arrayComponentUserTypeName;
 
+    public Item() {
+    }
+
     public Item(ItemType type, Object value) {
         this.type = type;
         this.value = value;

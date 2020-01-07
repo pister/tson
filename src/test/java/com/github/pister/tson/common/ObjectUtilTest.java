@@ -1,7 +1,7 @@
 package com.github.pister.tson.common;
 
 import com.github.pister.tson.objects.Person;
-import com.github.pister.tson.utils.ObjectUtil;
+import com.github.pister.tson.access.property.ObjectUtil;
 import junit.framework.TestCase;
 
 import java.util.Date;
