@@ -15,16 +15,17 @@ public enum ItemType {
     STRING("str"),
     DATE("date"),
     BINARY("bin"),
-    EMPTY(""),
+    LIST(""),
+    MAP(""),
     ;
 
-    private final String value;
+    private final String typeName;
 
-    ItemType(String value) {
-        this.value = value;
+    ItemType(String typeName) {
+        this.typeName = typeName;
     }
 
-    public String getValue() {
-        return value;
+    public String getTypeName() {
+        return typeName;
     }
 }

@@ -1,15 +1,17 @@
 # define
-<root> ::= <define>
+<root> ::= <item>
 <define> ::= <property-define> | <list-define>
-<property-define> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
-<list-define> ::= TOKEN_LIST_BEGIN <list-content> TOKEN_LIST_END
+<property-define> ::= (TOKEN_USER_CLASS_PREFIX <user-type-name>)? TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
+<list-define> ::= (TOKEN_USER_CLASS_PREFIX <user-type-name>)? TOKEN_LIST_BEGIN <list-content> TOKEN_LIST_END
 <list-content> ::= (<item> (TOKEN_COMMA <item> )*)? TOKEN_COMMA?
 <property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*)? TOKEN_COMMA?
-<name-item-pair> ::= <literal> TOKEN_COLON <item>
+<name-item-pair> ::= <id> TOKEN_COLON <item>
 <item> ::= <element> | <define>
-<element> ::= <type> TOKEN_AT <value>
+<element> ::= <type> TOKEN_AT <typeName>
 <type> ::= TOKEN_BOOL | TOKEN_INT8 | TOKEN_INT16 | TOKEN_INT32 | TOKEN_INT64 | TOKEN_FLOAT32 | TOKEN_FLOAT64 | TOKEN_STRING | TOKEN_DATE | TOKEN_BINARY
-<value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
+<typeName> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
+<user-type-name> ::= <id> (.<id>) *
+<id> ::= [a-zA-Z_$][a-zA-Z_$\d]*
 # token
 TOKEN_PROPERTY_BEGIN ::= '{'
 TOKEN_PROPERTY_END ::= '}'
@@ -28,6 +30,8 @@ TOKEN_FLOAT64 ::= 'f64'
 TOKEN_STRING ::= 'str'
 TOKEN_DATE  ::= 'date'
 TOKEN_BINARY ::= 'bin'
+TOKEN_USER_CLASS_PREFIX ::= '~'
+TOKEN_ARRAY_PREFIX ::= '+'
 TOKEN_VALUE_INT ::= ['1'-'9']['0'-'9']*
 TOKEN_VALUE_FLOAT ::= ('0' '.' [1-9][0-9]*) | ( ['1'-'9']['0'-'9']* '.' ['0'-'9']* )
 TOKEN_VALUE_TRUE ::= 'true'

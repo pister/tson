@@ -1,4 +1,6 @@
-package com.github.pister.tson.common;
+package com.github.pister.tson.utils;
+
+import com.github.pister.tson.common.Property;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,7 +10,9 @@ import java.util.Map;
 /**
  * Created by songlihuang on 2020/1/6.
  */
-public class ObjectUtil {
+public final class ObjectUtil {
+
+    private ObjectUtil() {}
 
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 

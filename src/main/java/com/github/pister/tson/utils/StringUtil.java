@@ -1,11 +1,13 @@
-package com.github.pister.tson.common;
+package com.github.pister.tson.utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class StringUtil {
+public final class StringUtil {
+
+	private StringUtil() {}
 
 	public static final String EMPTY = "";
 	

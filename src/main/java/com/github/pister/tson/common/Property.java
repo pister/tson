@@ -1,5 +1,7 @@
 package com.github.pister.tson.common;
 
+import com.github.pister.tson.utils.ObjectUtil;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 

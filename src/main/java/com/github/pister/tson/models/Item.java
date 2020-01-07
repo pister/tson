@@ -1,10 +1,10 @@
 package com.github.pister.tson.models;
 
 import com.github.pister.tson.common.ItemType;
-import com.github.pister.tson.common.ObjectUtil;
 import com.github.pister.tson.common.Types;
+import com.github.pister.tson.utils.ItemUtil;
 
-import java.util.*;
+import java.util.Date;
 
 /**
  * Created by songlihuang on 2020/1/5.
@@ -15,64 +15,24 @@ public class Item {
 
     private Object value;
 
+    private String userTypeName;
+
+    private boolean array;
+
     public Item(ItemType type, Object value) {
         this.type = type;
         this.value = value;
     }
 
+    public Item(ItemType type, Object value, String userTypeName) {
+        this.type = type;
+        this.value = value;
+        this.userTypeName = userTypeName;
+    }
+
     public static Item wrap(Object o) {
-        if (o == null) {
-            return null;
-        }
-        if (o instanceof String) {
-            return new Item(ItemType.STRING, o);
-        }
-        if (o instanceof Number) {
-            return new Item(Types.numnerTypeToItemType(o.getClass()), o);
-        }
-        if (o instanceof Boolean) {
-            return new Item(ItemType.BOOL, o);
-        }
-        if (o instanceof Character) {
-            return new Item(ItemType.INT16, (short)((Character)o).charValue());
-        }
-        if (o instanceof Date) {
-            return new Item(ItemType.DATE, o);
-        }
-        if (o instanceof Map) {
-            return mapToItem((Map)o);
-        }
-        if (o instanceof Iterable) {
-            return iterableToItem((Iterable)o);
-        }
-        // plain object
-        Map<String, Object> properties = ObjectUtil.objectPropertiesToMap(o);
-        return mapToItem(properties);
+        return ItemUtil.wrapItem(o);
     }
-
-    private static Item iterableToItem(Iterable it) {
-        List<Item> items = new ArrayList<Item>();
-        for (Object o : it) {
-            Item value = wrap(o);
-            items.add(value);
-        }
-        return new Item(ItemType.EMPTY, items);
-    }
-
-    private static Item mapToItem(Map<?, ?> m) {
-        Map<String, Item> tsonMap = new LinkedHashMap<String, Item>();
-        for (Map.Entry<?, ?> entry: m.entrySet()) {
-            Object keyObject = entry.getKey();
-            if (keyObject == null) {
-                continue;
-            }
-            String key = keyObject.toString();
-            Item value = wrap(entry.getValue());
-            tsonMap.put(key, value);
-        }
-        return new Item(ItemType.EMPTY, tsonMap);
-    }
-
 
     public ItemType getType() {
         return type;
@@ -219,6 +179,19 @@ public class Item {
         return defaultValue;
     }
 
+    public String getUserTypeName() {
+        return userTypeName;
+    }
 
+    public void setUserTypeName(String userTypeName) {
+        this.userTypeName = userTypeName;
+    }
 
+    public boolean isArray() {
+        return array;
+    }
+
+    public void setArray(boolean array) {
+        this.array = array;
+    }
 }

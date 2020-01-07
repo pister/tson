@@ -6,7 +6,9 @@ import java.util.Map;
 /**
  * Created by songlihuang on 2020/1/6.
  */
-public class Types {
+public final class Types {
+
+    private Types() {}
 
     public static final Class<?> BYTE_ARRAY_CLASS = (new byte[0]).getClass();
 
@@ -33,7 +35,7 @@ public class Types {
     }
 
 
-    public static ItemType numnerTypeToItemType(Class<?> clazz) {
+    public static ItemType numberTypeToItemType(Class<?> clazz) {
         return numberType2ItemTypes.get(clazz);
     }
 }

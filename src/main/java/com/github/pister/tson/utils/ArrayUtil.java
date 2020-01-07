@@ -1,4 +1,4 @@
-package com.github.pister.tson.common;
+package com.github.pister.tson.utils;
 
 
 import java.lang.reflect.Array;
@@ -6,7 +6,9 @@ import java.lang.reflect.Array;
 /**
  * @author pister 2011-12-22 10:11:30
  */
-public class ArrayUtil {
+public final class ArrayUtil {
+
+	private ArrayUtil() {}
 
 	public static boolean isEmpty(Object[] array) {
 		if (array == null || array.length == 0) {
