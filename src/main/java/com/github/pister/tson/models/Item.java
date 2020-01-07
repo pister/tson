@@ -19,6 +19,10 @@ public class Item {
 
     private boolean array;
 
+    private ItemType arrayComponentType;
+
+    private String arrayComponentUserTypeName;
+
     public Item(ItemType type, Object value) {
         this.type = type;
         this.value = value;
@@ -193,5 +197,21 @@ public class Item {
 
     public void setArray(boolean array) {
         this.array = array;
+    }
+
+    public ItemType getArrayComponentType() {
+        return arrayComponentType;
+    }
+
+    public void setArrayComponentType(ItemType arrayComponentType) {
+        this.arrayComponentType = arrayComponentType;
+    }
+
+    public String getArrayComponentUserTypeName() {
+        return arrayComponentUserTypeName;
+    }
+
+    public void setArrayComponentUserTypeName(String arrayComponentUserTypeName) {
+        this.arrayComponentUserTypeName = arrayComponentUserTypeName;
     }
 }

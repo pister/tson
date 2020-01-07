@@ -1,6 +1,8 @@
 package com.github.pister.tson.common;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,6 +15,7 @@ public final class Types {
     public static final Class<?> BYTE_ARRAY_CLASS = (new byte[0]).getClass();
 
     private static final Map<Class<?>, ItemType> numberType2ItemTypes = new HashMap<Class<?>, ItemType>();
+    private static final Map<Class<?>, ItemType> class2ItemTypes = new HashMap<Class<?>, ItemType>();
 
     static {
         numberType2ItemTypes.put(Byte.class, ItemType.INT8);
@@ -32,10 +35,41 @@ public final class Types {
 
         numberType2ItemTypes.put(Double.class, ItemType.FLOAT64);
         numberType2ItemTypes.put(Double.TYPE, ItemType.FLOAT64);
+
+        class2ItemTypes.putAll(numberType2ItemTypes);
+        class2ItemTypes.put(String.class, ItemType.STRING);
+        class2ItemTypes.put(Boolean.class, ItemType.BOOL);
+        class2ItemTypes.put(Date.class, ItemType.DATE);
+        class2ItemTypes.put(String.class, ItemType.STRING);
     }
 
 
     public static ItemType numberTypeToItemType(Class<?> clazz) {
         return numberType2ItemTypes.get(clazz);
+    }
+
+    public static ItemType classToItemType(Class<?> clazz) {
+        ItemType itemType = class2ItemTypes.get(clazz);
+        if (itemType != null) {
+            return itemType;
+        }
+        if (Date.class.isAssignableFrom(clazz)) {
+            return ItemType.DATE;
+        }
+        if (List.class.isAssignableFrom(clazz)) {
+            return ItemType.LIST;
+        }
+        if (Map.class.isAssignableFrom(clazz)) {
+            return ItemType.MAP;
+        }
+        return null;
+    }
+
+    public static String getUserItemTypeName(Class<?> clazz) {
+        ItemType itemType = class2ItemTypes.get(clazz);
+        if (itemType != null) {
+            return itemType.getTypeName();
+        }
+        return clazz.getCanonicalName();
     }
 }

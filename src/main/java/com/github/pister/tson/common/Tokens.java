@@ -19,8 +19,9 @@ public interface Tokens {
 
     String COLON = ":";
 
-    String TOKEN_USER_CLASS_PREFIX = "~";
+    String TOKEN_USER_TYPE_PREFIX = "#";
 
     String TOKEN_ARRAY_PREFIX = "+";
 
+    String TYPES_NAME = "types";
 }

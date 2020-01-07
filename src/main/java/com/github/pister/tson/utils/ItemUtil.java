@@ -54,7 +54,13 @@ public final  class ItemUtil {
             Item value = wrapItem(o);
             items.add(value);
         }
-        Item item = new Item(ItemType.LIST, items, componentType.getCanonicalName());
+        Item item = new Item(ItemType.LIST, items);
+        ItemType itemType = Types.classToItemType(componentType);
+        if (itemType != null) {
+            item.setArrayComponentType(itemType);
+        } else {
+            item.setArrayComponentUserTypeName(componentType.getCanonicalName());
+        }
         item.setArray(true);
         return item;
     }
