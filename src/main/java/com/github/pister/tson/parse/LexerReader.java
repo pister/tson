@@ -14,11 +14,11 @@ public class LexerReader {
 
     private FastBufferedReader reader;
 
+    private LinkedList<Integer> bufferQueue = new LinkedList<Integer>();
+
     public LexerReader(Reader reader) {
         this.reader = new FastBufferedReader(reader);
     }
-
-    private LinkedList<Integer> bufferQueue = new LinkedList<Integer>();
 
     public int nextChar() {
         if (!bufferQueue.isEmpty()) {

@@ -1,7 +1,6 @@
 package com.github.pister.tson.io;
 
 import com.github.pister.tson.common.Tokens;
-import com.github.pister.tson.common.Types;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base33;
 import com.github.pister.tson.utils.StringUtil;
