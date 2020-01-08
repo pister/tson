@@ -69,10 +69,8 @@ public class Parser {
                 throw new SyntaxException("prefix '+' only support array size, but " + item.getValue());
             }
         } else {
-            if (item.getType() == ItemType.MAP) {
-                if (definedType != null) {
-                    item.setUserTypeName(definedType.userType);
-                }
+            if (definedType != null) {
+                item.setUserTypeName(definedType.userType);
             }
         }
         return item;

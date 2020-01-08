@@ -22,9 +22,15 @@ public final class ItemUtil {
     private static final ObjectVisitor objectVisitor = new PropertyObjectVisitor();
 
     public static Item wrapItem(Object o) {
+        return wrapItemImpl(o, new ArrayList<Object>());
+    }
+
+    private static Item wrapItemImpl(Object o, List<Object> parents) {
         if (o == null) {
             return null;
         }
+        checkCycleReference(o, parents);
+        List<Object> clonedParents = copyList(parents, o);
         if (o instanceof String) {
             return new Item(ItemType.STRING, o);
         }
@@ -41,17 +47,25 @@ public final class ItemUtil {
             return new Item(ItemType.DATE, o);
         }
         if (o instanceof Map) {
-            return mapToItem((Map) o, null);
+            if (o instanceof HashMap) {
+                return mapToItem((Map) o, null, clonedParents);
+            } else {
+                return mapToItem((Map) o, o.getClass().getCanonicalName(), clonedParents);
+            }
         }
         if (o instanceof Iterable) {
-            return iterableToItem((Iterable) o, null);
+            if (o instanceof ArrayList) {
+                return iterableToItem((Iterable) o, null, clonedParents);
+            } else {
+                return iterableToItem((Iterable) o, o.getClass().getCanonicalName(), clonedParents);
+            }
         }
         if (o.getClass().isArray()) {
-            return arrayToItem(o, o.getClass().getComponentType());
+            return arrayToItem(o, o.getClass().getComponentType(), clonedParents);
         }
         // plain object
         Map<String, Object> properties = objectVisitor.getFields(o);
-        return mapToItem(properties, o.getClass().getName());
+        return mapToItem(properties, o.getClass().getName(), clonedParents);
     }
 
     public static Object itemToObject(Item item) {
@@ -88,6 +102,10 @@ public final class ItemUtil {
     }
 
     private static Class<?> getUserClass(Item item) {
+        // use java.util.Arrays.ArrayList treat as default List
+        if ("java.util.Arrays.ArrayList".equals(item.getUserTypeName())) {
+            return null;
+        }
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             try {
                 return Class.forName(item.getUserTypeName());
@@ -183,11 +201,27 @@ public final class ItemUtil {
         }
     }
 
-    private static Item arrayToItem(Object arrayObject, Class<?> componentType) {
+    private static List<Object> copyList(List<Object> objectList, Object ... additialObjects) {
+        List<Object> ret = new ArrayList<Object>(objectList);
+        for (Object obj : additialObjects) {
+            ret.add(obj);
+        }
+        return ret;
+    }
+
+    private static void checkCycleReference(Object o, List<Object> parents) {
+        for (Object parent : parents) {
+            if (parent == o) {
+                throw new RuntimeException("cycle reference for: " + o.getClass());
+            }
+        }
+    }
+
+    private static Item arrayToItem(Object arrayObject, Class<?> componentType, List<Object> parents) {
         List<Item> items = new ArrayList<Item>();
         for (int i = 0, len = Array.getLength(arrayObject); i < len; i++) {
             Object o = Array.get(arrayObject, i);
-            Item value = wrapItem(o);
+            Item value = wrapItemImpl(o, copyList(parents));
             items.add(value);
         }
         Item item = new Item(ItemType.LIST, items);
@@ -201,16 +235,16 @@ public final class ItemUtil {
         return item;
     }
 
-    private static Item iterableToItem(Iterable it, String userTypeName) {
+    private static Item iterableToItem(Iterable it, String userTypeName, List<Object> parents) {
         List<Item> items = new ArrayList<Item>();
         for (Object o : it) {
-            Item value = wrapItem(o);
+            Item value = wrapItemImpl(o, copyList(parents));
             items.add(value);
         }
         return new Item(ItemType.LIST, items, userTypeName);
     }
 
-    private static Item mapToItem(Map<?, ?> m, String userTypeName) {
+    private static Item mapToItem(Map<?, ?> m, String userTypeName, List<Object> parents) {
         Map<String, Item> tsonMap = new LinkedHashMap<String, Item>();
         for (Map.Entry<?, ?> entry : m.entrySet()) {
             Object keyObject = entry.getKey();
@@ -218,7 +252,8 @@ public final class ItemUtil {
                 continue;
             }
             String key = keyObject.toString();
-            Item value = wrapItem(entry.getValue());
+            Object o = entry.getValue();
+            Item value = wrapItemImpl(o, copyList(parents));
             tsonMap.put(key, value);
         }
         return new Item(ItemType.MAP, tsonMap, userTypeName);
