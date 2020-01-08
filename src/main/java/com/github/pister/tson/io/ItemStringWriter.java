@@ -1,6 +1,6 @@
 package com.github.pister.tson.io;
 
-import com.github.pister.tson.common.Tokens;
+import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base33;
 import com.github.pister.tson.utils.StringUtil;
@@ -19,14 +19,12 @@ import java.util.Map;
  */
 public class ItemStringWriter {
 
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-
     private static final Charset DEFAULT_CHARSET = Charset.forName("utf-8");
 
     private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat(DATE_FORMAT);
+            return new SimpleDateFormat(Constants.DATE_FORMAT);
         }
     };
 
@@ -81,7 +79,7 @@ public class ItemStringWriter {
 
     private void writeBinary(Item item) {
         stringBuilder.append(item.getType().getTypeName());
-        stringBuilder.append(Tokens.TYPE_VALUE_SEP);
+        stringBuilder.append(Constants.TYPE_VALUE_SEP);
         stringBuilder.append("\"");
         writeData(item.getValue());
         stringBuilder.append("\"");
@@ -116,9 +114,9 @@ public class ItemStringWriter {
 
     private void writeUserType(String userTypeName) {
         int index = findTypeIndex(userTypeName);
-        stringBuilder.append(Tokens.TOKEN_USER_TYPE_PREFIX);
+        stringBuilder.append(Constants.TOKEN_USER_TYPE_PREFIX);
         stringBuilder.append(index);
-        stringBuilder.append(Tokens.TYPE_VALUE_SEP);
+        stringBuilder.append(Constants.TYPE_VALUE_SEP);
     }
 
     private void writeList(Item item) {
@@ -126,25 +124,25 @@ public class ItemStringWriter {
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             writeUserType(item.getUserTypeName());
         } else if (item.isArray()) {
-            stringBuilder.append(Tokens.TOKEN_ARRAY_PREFIX);
+            stringBuilder.append(Constants.TOKEN_ARRAY_PREFIX);
             if (!StringUtil.isEmpty(item.getArrayComponentUserTypeName())) {
                 writeUserType(item.getArrayComponentUserTypeName());
             } else {
                 stringBuilder.append(item.getArrayComponentType().getTypeName());
-                stringBuilder.append(Tokens.TYPE_VALUE_SEP);
+                stringBuilder.append(Constants.TYPE_VALUE_SEP);
             }
         }
-        stringBuilder.append(Tokens.LIST_BEGIN);
+        stringBuilder.append(Constants.LIST_BEGIN);
         boolean first = true;
         for (Item subItem : list) {
             if (first) {
                 first = false;
             } else {
-                stringBuilder.append(Tokens.COMMA);
+                stringBuilder.append(Constants.COMMA);
             }
             write(subItem);
         }
-        stringBuilder.append(Tokens.LIST_END);
+        stringBuilder.append(Constants.LIST_END);
     }
 
     private void writeMap(Item item) {
@@ -152,24 +150,24 @@ public class ItemStringWriter {
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             writeUserType(item.getUserTypeName());
         }
-        stringBuilder.append(Tokens.MAP_BEGIN);
+        stringBuilder.append(Constants.MAP_BEGIN);
         boolean first = true;
         for (Map.Entry<String, Item> entry : map.entrySet()) {
             if (first) {
                 first = false;
             } else {
-                stringBuilder.append(Tokens.COMMA);
+                stringBuilder.append(Constants.COMMA);
             }
             stringBuilder.append(entry.getKey());
-            stringBuilder.append(Tokens.COLON);
+            stringBuilder.append(Constants.COLON);
             write(entry.getValue());
         }
-        stringBuilder.append(Tokens.MAP_END);
+        stringBuilder.append(Constants.MAP_END);
     }
 
     private void writeString(String name, String value) {
         stringBuilder.append(name);
-        stringBuilder.append(Tokens.TYPE_VALUE_SEP);
+        stringBuilder.append(Constants.TYPE_VALUE_SEP);
         stringBuilder.append("\"");
         stringBuilder.append(value.replace("\"", "\\\""));
         stringBuilder.append("\"");
@@ -177,15 +175,15 @@ public class ItemStringWriter {
 
     private void writeDirect(Item item) {
         stringBuilder.append(item.getType().getTypeName());
-        stringBuilder.append(Tokens.TYPE_VALUE_SEP);
+        stringBuilder.append(Constants.TYPE_VALUE_SEP);
         stringBuilder.append(item.getValue());
     }
 
     private String headerToString() {
         StringBuilder header = new StringBuilder();
-        header.append(Tokens.TOKEN_USER_TYPE_PREFIX);
-        header.append(Tokens.TYPES_NAME);
-        header.append(Tokens.MAP_BEGIN);
+        header.append(Constants.TOKEN_USER_TYPE_PREFIX);
+        header.append(Constants.TYPES_NAME);
+        header.append(Constants.MAP_BEGIN);
         boolean first = true;
         for (Map.Entry<String, Integer> entry : typeIndexMap.entrySet()) {
             String name = entry.getKey();
@@ -193,13 +191,13 @@ public class ItemStringWriter {
             if (first) {
                 first = false;
             } else {
-                header.append(Tokens.COMMA);
+                header.append(Constants.COMMA);
             }
             header.append(index);
-            header.append(Tokens.COLON);
+            header.append(Constants.COLON);
             header.append(name);
         }
-        header.append(Tokens.MAP_END);
+        header.append(Constants.MAP_END);
         return header.toString();
     }
 

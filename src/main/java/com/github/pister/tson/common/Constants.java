@@ -3,7 +3,7 @@ package com.github.pister.tson.common;
 /**
  * Created by songlihuang on 2020/1/6.
  */
-public interface Tokens {
+public interface Constants {
 
     String TYPE_VALUE_SEP = "@";
 
@@ -24,4 +24,7 @@ public interface Tokens {
     String TOKEN_ARRAY_PREFIX = "+";
 
     String TYPES_NAME = "types";
+
+    String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+
 }

@@ -1,17 +1,25 @@
 package com.github.pister.tson.parse;
 
+import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by songlihuang on 2020/1/7.
  */
 public class Parser {
+
+    private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat(Constants.DATE_FORMAT);
+        }
+    };
+
 
     private Lexer lexer;
 
@@ -37,50 +45,124 @@ public class Parser {
     }
 
     private Item item() {
-        // <item> ::= <define> | <element>
-        ParseResult<Item> itemResult = define();
-        if (itemResult.isMatches()) {
-            return itemResult.getValue();
-        }
-        return element();
-    }
-
-    private ParseResult<Item> define() {
-        // <define> ::= TOKEN_ARRAY_PREFIX? <define-detail>
+        // <item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
         boolean array = false;
         if (lexer.popIfMatchesType(TokenType.ARRAY_PREFIX)) {
             array = true;
         }
-        ParseResult<Item> itemResult = defineDetail();
+        ParseResult<ItemWithType> itemResult = defineDetail();
         if (!itemResult.isMatches()) {
-            return ParseResult.createNotMatch();
+            throw new SyntaxException("need value define");
         }
-        itemResult.getValue().setArray(array);
-        if (array && itemResult.getValue().getType() == ItemType.MAP) {
-            throw new SyntaxException("property type not support array mark '+'");
+        ItemWithType itemWithType = itemResult.getValue();
+        Item item = itemWithType.item;
+        DefinedType definedType = itemWithType.definedType;
+        if (array) {
+            if (item.getType() == ItemType.LIST) {
+                item.setArray(true);
+                if (definedType == null) {
+                    throw new SyntaxException("array must need a type");
+                }
+                item.setArrayComponentType(definedType.itemType);
+                item.setArrayComponentUserTypeName(definedType.userType);
+            } else {
+                throw new SyntaxException("prefix '+' only support array size, but " + item.getValue());
+            }
+        } else {
+            if (item.getType() == ItemType.MAP) {
+                if (definedType != null) {
+                    item.setUserTypeName(definedType.userType);
+                }
+            }
         }
-        return itemResult;
+        return item;
     }
 
 
-    private ParseResult<Item> defineDetail() {
-        // <define-detail> ::= (TOKEN_MARK TOKEN_VALUE_INT)? <define-detail-content>
-        String userType = null;
+    private static class ItemWithType {
+        DefinedType definedType;
+        Item item;
+
+        public ItemWithType(DefinedType definedType, Item item) {
+            this.definedType = definedType;
+            this.item = item;
+        }
+    }
+
+    private ParseResult<ItemWithType> defineDetail() {
+        // <define-detail> ::= <define-detail-content> | (<define-with-type> TOKEN_AT (<define-detail-content> | <value>))
+        ParseResult<Item> itemResult = defineDetailContent();
+        if (itemResult.isMatches()) {
+            return ParseResult.createMatched(new ItemWithType(null, itemResult.getValue()));
+        }
+        ParseResult<DefinedType> definedTypeParseResult = defineWithType();
+        if (!definedTypeParseResult.isMatches()) {
+            throw new SyntaxException("need a type before value");
+        }
+        DefinedType definedType = definedTypeParseResult.getValue();
+        if (!lexer.popIfMatchesType(TokenType.AT)) {
+            throw new SyntaxException("need @ after type");
+        }
+        itemResult = defineDetailContent();
+        if (itemResult.isMatches()) {
+            return ParseResult.createMatched(new ItemWithType(definedType, itemResult.getValue()));
+        }
+        ParseResult<Object> objectParseResult = value();
+        if (objectParseResult.isMatches()) {
+            if (definedType.itemType == null) {
+                throw new SyntaxException("need an type (not user type) with value");
+            }
+            Item item = new Item(definedType.itemType, objectParseResult.getValue());
+            castDataForType(item);
+            return ParseResult.createMatched(new ItemWithType(definedType, item));
+        }
+        throw new SyntaxException("need an map, list, or typed value define");
+    }
+
+    private void castDataForType(Item item) {
+        switch (item.getType()) {
+            case DATE:
+                try {
+                    Date date = dateFormatThreadLocal.get().parse((String) item.getValue());
+                    item.setValue(date);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case BINARY:
+                // TODO
+                break;
+        }
+    }
+
+    private ParseResult<DefinedType> defineWithType() {
+        // <define-with-type> ::= <type> | (TOKEN_MARK TOKEN_VALUE_INT)
+        ParseResult<ItemType> itemTypeResult = type();
+        if (itemTypeResult.isMatches()) {
+            return ParseResult.createMatched(new DefinedType(itemTypeResult.getValue(), null));
+        }
         if (lexer.popIfMatchesType(TokenType.MARK)) {
             Token indexToken = lexer.nextToken();
             if (indexToken.getTokenType() != TokenType.VALUE_INT) {
-                throw new SyntaxException("need a int index value after #");
+                throw new SyntaxException("need an index after #");
             }
-            int index = (Integer) indexToken.getValue();
-            userType = this.types.get(index);
+            int index = ((Number)indexToken.getValue()).intValue();
+            String userName = types.get(index);
+            return ParseResult.createMatched(new DefinedType(null, userName));
         }
-        ParseResult<Item> itemResult = defineDetailContent();
-        if (!itemResult.isMatches()) {
-            return ParseResult.createNotMatch();
-        }
-        itemResult.getValue().setUserTypeName(userType);
-        return itemResult;
+        return ParseResult.createNotMatch();
     }
+
+    private static class DefinedType {
+        ItemType itemType;
+        String userType;
+
+        public DefinedType(ItemType itemType, String userType) {
+            this.itemType = itemType;
+            this.userType = userType;
+        }
+    }
+
 
     private ParseResult<Item> defineDetailContent() {
         // <define-detail-content> ::= <property-define-detail-content> | <list-define-detail-content>
@@ -98,11 +180,9 @@ public class Parser {
     private ParseResult<Map<String, Item>> propertyDefineDetailContent() {
         // <property-define-detail-content> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
         if (!lexer.popIfMatchesType(TokenType.PROPERTY_BEGIN)) {
-            return new ParseResult<Map<String, Item>>(false, null);
+            return ParseResult.createNotMatch();
         }
-
         Map<String, Item> propertyContent = propertyContent();
-
         if (!lexer.popIfMatchesType(TokenType.PROPERTY_END)) {
             throw new SyntaxException("miss } after property define");
         }
@@ -192,58 +272,51 @@ public class Parser {
         return ParseResult.createMatched(items);
     }
 
-
-    private Item element() {
-        // <element> ::= <type> TOKEN_AT <value>
-        ItemType type = type();
-        if (!lexer.popIfMatchesType(TokenType.AT)) {
-            throw new SyntaxException("miss @ after type");
-        }
-        Object value = value();
-        return new Item(type, value);
-    }
-
-    private Object value() {
+    private ParseResult<Object> value() {
         // <value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
         Token token = lexer.nextToken();
         switch (token.getTokenType()) {
             case VALUE_INT:
             case VALUE_FLOAT:
-            case VALUE_TRUE:
-            case VALUE_FALSE:
             case VALUE_STRING:
-                return token.getValue();
+                return ParseResult.createMatched(token.getValue());
+            case VALUE_TRUE:
+                return ParseResult.createMatched((Object) Boolean.TRUE);
+            case VALUE_FALSE:
+                return ParseResult.createMatched((Object) Boolean.FALSE);
             default:
-                throw new SyntaxException("need a value");
+                lexer.pushBack(token);
+                return ParseResult.createNotMatch();
         }
     }
 
-    private ItemType type() {
+    private ParseResult<ItemType> type() {
         // <type> ::= TOKEN_TYPE_BOOL | TOKEN_TYPE_INT8 | TOKEN_TYPE_INT16 | TOKEN_TYPE_INT32 | TOKEN_TYPE_INT64 | TOKEN_TYPE_FLOAT32 | TOKEN_TYPE_FLOAT64 | TOKEN_TYPE_STRING | TOKEN_TYPE_DATE | TOKEN_TYPE_BINARY
         Token token = lexer.nextToken();
         switch (token.getTokenType()) {
             case KW_TYPE_BOOL:
-                return ItemType.BOOL;
+                return ParseResult.createMatched(ItemType.BOOL);
             case KW_TYPE_INT8:
-                return ItemType.INT8;
+                return ParseResult.createMatched(ItemType.INT8);
             case KW_TYPE_INT16:
-                return ItemType.INT16;
+                return ParseResult.createMatched(ItemType.INT16);
             case KW_TYPE_INT32:
-                return ItemType.INT32;
+                return ParseResult.createMatched(ItemType.INT32);
             case KW_TYPE_INT64:
-                return ItemType.INT64;
+                return ParseResult.createMatched(ItemType.INT64);
             case KW_TYPE_FLOAT32:
-                return ItemType.FLOAT32;
+                return ParseResult.createMatched(ItemType.FLOAT32);
             case KW_TYPE_FLOAT64:
-                return ItemType.FLOAT64;
+                return ParseResult.createMatched(ItemType.FLOAT64);
             case KW_TYPE_STRING:
-                return ItemType.STRING;
+                return ParseResult.createMatched(ItemType.STRING);
             case KW_TYPE_DATE:
-                return ItemType.DATE;
+                return ParseResult.createMatched(ItemType.DATE);
             case KW_TYPE_BINARY:
-                return ItemType.BINARY;
+                return ParseResult.createMatched(ItemType.BINARY);
             default:
-                throw new SyntaxException("need a type");
+                lexer.pushBack(token);
+                return ParseResult.createNotMatch();
         }
     }
 
@@ -268,9 +341,10 @@ public class Parser {
         if (token.getTokenType() != TokenType.VALUE_INT) {
             throw new SyntaxException("need an int value, but:" + token.getValue());
         }
-        int index = (Integer)token.getValue();
+        lexer.nextToken(); // pop int value
+        int index = ((Number)token.getValue()).intValue();
         if (!lexer.popIfMatchesType(TokenType.COLON)) {
-            throw new SyntaxException("need an ':', but:" + token.getValue());
+            throw new SyntaxException("need an ':', but: " + token.getValue());
         }
         String userTypeName = userTypeName();
         types.put(index, userTypeName);

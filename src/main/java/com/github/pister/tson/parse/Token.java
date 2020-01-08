@@ -21,4 +21,5 @@ public class Token {
     public Object getValue() {
         return value;
     }
+
 }

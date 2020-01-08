@@ -3,16 +3,19 @@
 <header> ::= <types-define>?
 <types-define> ::= TOKEN_MARK_TYPES TOKEN_PROPERTY_BEGIN <types-define-content> TOKEN_PROPERTY_END
 <types-define-content> ::= (TOKEN_VALUE_INT TOKEN_COLON <user-type-name>) (TOKEN_COMMA TOKEN_VALUE_INT TOKEN_COLON <user-type-name>)*
-<define> ::= TOKEN_ARRAY_PREFIX? <define-detail>
-<define-detail> ::= (TOKEN_MARK TOKEN_VALUE_INT)? <define-detail-content>
+
+<item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
+<define-detail> ::= <define-detail-content> | (<define-with-type> TOKEN_AT (<define-detail-content> | <value>))
+<define-with-type> ::= <type> | (TOKEN_MARK TOKEN_VALUE_INT)
+
+<define-detail> ::= (TOKEN_MARK TOKEN_VALUE_INT TOKEN_AT)? <define-detail-content>
 <define-detail-content> ::= <property-define-detail-content> | <list-define-detail-content>
 <property-define-detail-content> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
 <list-define-detail-content> ::= TOKEN_LIST_BEGIN <list-content> TOKEN_LIST_END
 <list-content> ::= (<item> (TOKEN_COMMA <item> )*)?
 <property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*)?
 <name-item-pair> ::= TOKEN_ID TOKEN_COLON <item>
-<item> ::= <define> | <element>
-<element> ::= <type> TOKEN_AT <value>
+
 <type> ::= TOKEN_TYPE_BOOL | TOKEN_TYPE_INT8 | TOKEN_TYPE_INT16 | TOKEN_TYPE_INT32 | TOKEN_TYPE_INT64 | TOKEN_TYPE_FLOAT32 | TOKEN_TYPE_FLOAT64 | TOKEN_TYPE_STRING | TOKEN_TYPE_DATE | TOKEN_TYPE_BINARY
 <value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
 <user-type-name> ::= TOKEN_ID (TOKEN_DOT TOKEN_ID) *
