@@ -50,6 +50,46 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
+    public void testArray1() {
+        String[] a = new String[]{"hello", "world"};
+        String s = Tsons.toTsonString(a);
+        Object a2 = Tsons.parseForObject(s);
+        String[] b = (String[])a2;
+        Assert.assertEquals(a.length, b.length);
+        for (int i = 0; i < a.length; i++) {
+            Assert.assertEquals(a[i], b[i]);
+        }
+    }
+
+    public void testArray2() {
+        int[] a = new int[]{1, 4, 5};
+        String s = Tsons.toTsonString(a);
+        Object a2 = Tsons.parseForObject(s);
+        int[] b = (int[])a2;
+        Assert.assertEquals(a.length, b.length);
+        for (int i = 0; i < a.length; i++) {
+            Assert.assertEquals(a[i], b[i]);
+        }
+    }
+
+    public void testMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("intValue", 123);
+        map.put("doubleValue", 123.456);
+        map.put("floatValue", 1.24f);
+        map.put("dateValue", new Date());
+        List<Object> list = new ArrayList<Object>();
+        list.add("hello");
+        list.add(123);
+        list.add(true);
+        map.put("myList", list);
+        String s = Tsons.toTsonString(map);
+        // {dateValue:date@"2020-01-08 17:46:12.908",intValue:i32@123,myList:[str@"hello",i32@123,bool@true],floatValue:f32@1.24,doubleValue:f64@123.456}
+        System.out.println(s);
+        Object map2 = Tsons.parseForObject(s);
+        Assert.assertEquals(map, map2);
+    }
+
 
     public void testCycleRef() {
         try {
@@ -119,16 +159,7 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
-    public void testArray() {
-        int[] a = new int[]{1, 4, 5};
-        String s = Tsons.toTsonString(a);
-        Object a2 = Tsons.parseForObject(s);
-        int[] b = (int[])a2;
-        Assert.assertEquals(a.length, b.length);
-        for (int i = 0; i < a.length; i++) {
-            Assert.assertEquals(a[i], b[i]);
-        }
-    }
+
 
     public void testInt() {
         int a = 123;
