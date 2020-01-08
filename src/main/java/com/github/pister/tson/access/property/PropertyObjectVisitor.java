@@ -12,4 +12,22 @@ public class PropertyObjectVisitor implements ObjectVisitor {
     public Map<String, Object> getFields(Object object) {
         return ObjectUtil.objectPropertiesToMap(object);
     }
+
+    @Override
+    public void setFields(Object object, Map<String, Object> fields) {
+        Map<String, Property> propertyMap = ObjectUtil.findPropertiesFromClass(object.getClass());
+        for (Map.Entry<String, Property> entry : propertyMap.entrySet()) {
+            String name = entry.getKey();
+            Property property = entry.getValue();
+            Object value = fields.get(name);
+            if (value == null) {
+                continue;
+            }
+            try {
+                property.setValue(object, value);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            }
+        }
+    }
 }

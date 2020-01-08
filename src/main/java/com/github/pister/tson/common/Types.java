@@ -1,5 +1,7 @@
 package com.github.pister.tson.common;
 
+import com.github.pister.tson.models.Item;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +18,7 @@ public final class Types {
 
     private static final Map<Class<?>, ItemType> numberType2ItemTypes = new HashMap<Class<?>, ItemType>();
     private static final Map<Class<?>, ItemType> class2ItemTypes = new HashMap<Class<?>, ItemType>();
+    private static final Map<Class<?>, ItemType> arrayComponentType2ItemTypes = new HashMap<Class<?>, ItemType>();
 
     static {
         numberType2ItemTypes.put(Byte.class, ItemType.INT8);
@@ -41,11 +44,26 @@ public final class Types {
         class2ItemTypes.put(Boolean.class, ItemType.BOOL);
         class2ItemTypes.put(Date.class, ItemType.DATE);
         class2ItemTypes.put(String.class, ItemType.STRING);
+
+        arrayComponentType2ItemTypes.put(Byte.TYPE, ItemType.INT8);
+        arrayComponentType2ItemTypes.put(Short.TYPE, ItemType.INT16);
+        arrayComponentType2ItemTypes.put(Integer.TYPE, ItemType.INT32);
+        arrayComponentType2ItemTypes.put(Long.TYPE, ItemType.INT64);
+        arrayComponentType2ItemTypes.put(Float.TYPE, ItemType.FLOAT32);
+        arrayComponentType2ItemTypes.put(Double.TYPE, ItemType.FLOAT64);
+        arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
+        arrayComponentType2ItemTypes.put(Boolean.class, ItemType.BOOL);
+        arrayComponentType2ItemTypes.put(Date.class, ItemType.DATE);
+        arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
     }
 
 
     public static ItemType numberTypeToItemType(Class<?> clazz) {
         return numberType2ItemTypes.get(clazz);
+    }
+
+    public static ItemType getArrayComponentType(Class<?> clazz) {
+        return arrayComponentType2ItemTypes.get(clazz);
     }
 
     public static ItemType classToItemType(Class<?> clazz) {

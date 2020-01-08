@@ -1,5 +1,6 @@
 package com.github.pister.tson.objects;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -116,5 +117,43 @@ public class Person {
 
     public void setAttrs(Map<String, Object> attrs) {
         this.attrs = attrs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Person person = (Person) o;
+
+        if (age != person.age) return false;
+        if (married != person.married) return false;
+        if (weight != person.weight) return false;
+        if (name != null ? !name.equals(person.name) : person.name != null) return false;
+        if (birth != null ? !birth.equals(person.birth) : person.birth != null) return false;
+        if (address != null ? !address.equals(person.address) : person.address != null) return false;
+        if (contacts != null ? !contacts.equals(person.contacts) : person.contacts != null) return false;
+        if (attrs != null ? !attrs.equals(person.attrs) : person.attrs != null) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(mobiles, person.mobiles)) return false;
+        if (!Arrays.equals(attr1, person.attr1)) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        return Arrays.equals(attr2, person.attr2);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = age;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (birth != null ? birth.hashCode() : 0);
+        result = 31 * result + (married ? 1 : 0);
+        result = 31 * result + (int) (weight ^ (weight >>> 32));
+        result = 31 * result + (address != null ? address.hashCode() : 0);
+        result = 31 * result + (contacts != null ? contacts.hashCode() : 0);
+        result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(mobiles);
+        result = 31 * result + Arrays.hashCode(attr1);
+        result = 31 * result + Arrays.hashCode(attr2);
+        return result;
     }
 }

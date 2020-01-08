@@ -40,7 +40,7 @@ public final class ObjectUtil {
         return ret;
     }
 
-    private static Map<String, Property> findPropertiesFromClass(Class<?> targetClass) {
+    public static Map<String, Property> findPropertiesFromClass(Class<?> targetClass) {
         Method[] methods = targetClass.getMethods();
         Map<String, Method> readableMethods = new HashMap<String, Method>();
         Map<String, Method> writableMethods = new HashMap<String, Method>();

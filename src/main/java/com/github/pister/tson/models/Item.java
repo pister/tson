@@ -41,6 +41,10 @@ public class Item {
         return ItemUtil.wrapItem(o);
     }
 
+    public Object extract() {
+        return ItemUtil.itemToObject(this);
+    }
+
     public ItemType getType() {
         return type;
     }
