@@ -5,6 +5,7 @@ import com.github.pister.tson.objects.Person;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -45,7 +46,6 @@ public class TsonsTest extends TestCase {
         a.add("bb");
         a.add("cc");
         String s = Tsons.toTsonString(a);
-        System.out.println(s);
         Object a2 = Tsons.parseForObject(s);
         Assert.assertEquals(a, a2);
     }
@@ -88,6 +88,36 @@ public class TsonsTest extends TestCase {
         System.out.println(s);
         Object map2 = Tsons.parseForObject(s);
         Assert.assertEquals(map, map2);
+    }
+
+    public void testArray3d() {
+        int[][][] array3d = new int[2][3][4];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 4; k++) {
+                   array3d[i][j][k] = i * 100 + j * 10 + k;
+                }
+            }
+        }
+        String s1 = Tsons.toTsonString(array3d);
+        Object o2 = Tsons.parseForObject(s1);
+        int[][][] array3d2 = (int[][][])o2;
+        Assert.assertEquals(array3d.length, array3d2.length);
+        for (int i = 0; i < array3d.length; i++) {
+            int[][] a1 = array3d[i];
+            int[][] a2 = array3d2[i];
+            Assert.assertEquals(a1.length, a2.length);
+            for (int j = 0; j < a1.length; j++) {
+                int[] a11 = a1[j];
+                int[] a21 = a2[j];
+                Assert.assertEquals(a11.length, a21.length);
+                for (int k = 0; k < a11.length; k++) {
+                    int a111 = a11[k];
+                    int a211 = a21[k];
+                    Assert.assertEquals(a111, a211);
+                }
+            }
+        }
     }
 
 
@@ -154,15 +184,12 @@ public class TsonsTest extends TestCase {
         params.put("v2", "s6");
         a.add(params);
         String s = Tsons.toTsonString(a);
-        System.out.println(s);
         Object a2 = Tsons.parseForObject(s);
         Assert.assertEquals(a, a2);
     }
 
-
-
     public void testInt() {
-        int a = 123;
+        int a = -123;
         String s = Tsons.toTsonString(a);
         Object a2 = Tsons.parseForObject(s);
         Assert.assertEquals(a, a2);
@@ -203,6 +230,7 @@ public class TsonsTest extends TestCase {
         person.setName("Jack");
         person.setMarried(true);
         person.setAddress(Arrays.asList("xx", "yy"));
+        person.setMyMatrix(new int[2][3]);
 
         person.setContacts(Arrays.asList(new Contact("Peter", "133"), new Contact("Tom", "134")));
         Map<String, Object> attrs = new HashMap<String, Object>();
@@ -216,6 +244,7 @@ public class TsonsTest extends TestCase {
         person.setAttr2(new Integer[]{3, 4});
 
         String s = Tsons.toTsonString(person);
+        System.out.println(s);
         Person person2 = (Person) Tsons.parseForObject(s);
         Assert.assertTrue(person.equals(person2));
     }

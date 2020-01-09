@@ -90,6 +90,8 @@ public class Lexer {
                     return handleMark(c);
                 case '\"':
                     return handleString(c);
+                case '-':
+                    return handleNumber(c);
                 case '0':
                 case '1':
                 case '2':
@@ -207,8 +209,8 @@ public class Lexer {
             long intPart = 0;
             double floatPart = 0;
             long minus = 1;
-            if (c == '-' || c == '+') {
-                minus = (c == '-') ? -1 : 1;
+            if (c == '-' ) {
+                minus = -1;
                 int nextC = lexerReader.peek();
                 if (!isDigit(nextC) && nextC != '.') {
                     return new Token(TokenType.ERROR, "need a number or a dot");

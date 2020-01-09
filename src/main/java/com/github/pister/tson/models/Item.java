@@ -23,6 +23,8 @@ public class Item {
 
     private String arrayComponentUserTypeName;
 
+    private int arrayDimensions;
+
     public Item() {
     }
 
@@ -220,5 +222,13 @@ public class Item {
 
     public void setArrayComponentUserTypeName(String arrayComponentUserTypeName) {
         this.arrayComponentUserTypeName = arrayComponentUserTypeName;
+    }
+
+    public int getArrayDimensions() {
+        return arrayDimensions;
+    }
+
+    public void setArrayDimensions(int arrayDimensions) {
+        this.arrayDimensions = arrayDimensions;
     }
 }

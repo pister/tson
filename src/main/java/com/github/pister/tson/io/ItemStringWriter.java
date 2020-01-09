@@ -7,6 +7,7 @@ import com.github.pister.tson.utils.StringUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,6 +21,8 @@ import java.util.Map;
 public class ItemStringWriter {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName("utf-8");
+
+    private boolean ignoreNullValue = true;
 
     private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
@@ -119,12 +122,14 @@ public class ItemStringWriter {
         stringBuilder.append(Constants.TYPE_VALUE_SEP);
     }
 
+
     private void writeList(Item item) {
         List<Item> list = (List<Item>)item.getValue();
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             writeUserType(item.getUserTypeName());
         } else if (item.isArray()) {
             stringBuilder.append(Constants.TOKEN_ARRAY_PREFIX);
+            stringBuilder.append(item.getArrayDimensions());
             if (!StringUtil.isEmpty(item.getArrayComponentUserTypeName())) {
                 writeUserType(item.getArrayComponentUserTypeName());
             } else {
@@ -153,6 +158,9 @@ public class ItemStringWriter {
         stringBuilder.append(Constants.MAP_BEGIN);
         boolean first = true;
         for (Map.Entry<String, Item> entry : map.entrySet()) {
+            if (ignoreNullValue && entry.getValue() == null) {
+                continue;
+            }
             if (first) {
                 first = false;
             } else {
@@ -218,4 +226,11 @@ public class ItemStringWriter {
         return data.toString();
     }
 
+    public boolean isIgnoreNullValue() {
+        return ignoreNullValue;
+    }
+
+    public void setIgnoreNullValue(boolean ignoreNullValue) {
+        this.ignoreNullValue = ignoreNullValue;
+    }
 }

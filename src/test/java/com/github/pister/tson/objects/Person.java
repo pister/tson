@@ -31,6 +31,8 @@ public class Person {
 
     private Integer[] attr2;
 
+    private int[][] myMatrix;
+
     public int[] getAttr1() {
         return attr1;
     }
@@ -119,6 +121,14 @@ public class Person {
         this.attrs = attrs;
     }
 
+    public int[][] getMyMatrix() {
+        return myMatrix;
+    }
+
+    public void setMyMatrix(int[][] myMatrix) {
+        this.myMatrix = myMatrix;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -138,7 +148,8 @@ public class Person {
         if (!Arrays.equals(mobiles, person.mobiles)) return false;
         if (!Arrays.equals(attr1, person.attr1)) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        return Arrays.equals(attr2, person.attr2);
+        if (!Arrays.equals(attr2, person.attr2)) return false;
+        return Arrays.deepEquals(myMatrix, person.myMatrix);
     }
 
     @Override
@@ -154,6 +165,7 @@ public class Person {
         result = 31 * result + Arrays.hashCode(mobiles);
         result = 31 * result + Arrays.hashCode(attr1);
         result = 31 * result + Arrays.hashCode(attr2);
+        result = 31 * result + Arrays.deepHashCode(myMatrix);
         return result;
     }
 }

@@ -47,8 +47,11 @@ public class Parser {
     private Item item() {
         // <item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
         boolean array = false;
-        if (lexer.popIfMatchesType(TokenType.ARRAY_PREFIX)) {
+        int dimensions = 0;
+        ParseResult<Integer> arrayResult = arrayPrefix();
+        if (arrayResult.isMatches()) {
             array = true;
+            dimensions = arrayResult.getValue();
         }
         ParseResult<ItemWithType> itemResult = defineDetail();
         if (!itemResult.isMatches()) {
@@ -60,6 +63,7 @@ public class Parser {
         if (array) {
             if (item.getType() == ItemType.LIST) {
                 item.setArray(true);
+                item.setArrayDimensions(dimensions);
                 if (definedType == null) {
                     throw new SyntaxException("array must need a type");
                 }
@@ -74,6 +78,24 @@ public class Parser {
             }
         }
         return item;
+    }
+
+    private ParseResult<Integer> arrayPrefix() {
+        // <array-prefix> ::= TOKEN_ARRAY_PREFIX TOKEN_VALUE_INT?
+        if (!lexer.popIfMatchesType(TokenType.ARRAY_PREFIX)) {
+            return ParseResult.createNotMatch();
+        }
+
+        Token token = lexer.peek();
+        if (token.getTokenType() != TokenType.VALUE_INT) {
+            return ParseResult.createMatched(1);
+        }
+        int dimensions = ((Number)token.getValue()).intValue();
+        if (dimensions <= 0) {
+            throw new SyntaxException("dimensions must greater than 0");
+        }
+        lexer.nextToken();
+        return ParseResult.createMatched(dimensions);
     }
 
 

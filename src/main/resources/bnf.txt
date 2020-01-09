@@ -4,9 +4,11 @@
 <types-define> ::= TOKEN_MARK_TYPES TOKEN_PROPERTY_BEGIN <types-define-content> TOKEN_PROPERTY_END
 <types-define-content> ::= (TOKEN_VALUE_INT TOKEN_COLON <user-type-name>) (TOKEN_COMMA TOKEN_VALUE_INT TOKEN_COLON <user-type-name>)*
 
-<item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
+<item> ::= <array-prefix>? <define-detail>
 <define-detail> ::= <define-detail-content> | (<define-with-type> TOKEN_AT (<define-detail-content> | <value>))
 <define-with-type> ::= <type> | (TOKEN_MARK TOKEN_VALUE_INT)
+
+<array-prefix> ::= TOKEN_ARRAY_PREFIX TOKEN_VALUE_INT?
 
 <define-detail> ::= (TOKEN_MARK TOKEN_VALUE_INT TOKEN_AT)? <define-detail-content>
 <define-detail-content> ::= <property-define-detail-content> | <list-define-detail-content>
@@ -43,8 +45,8 @@ TOKEN_TYPE_STRING ::= 'str'
 TOKEN_TYPE_DATE  ::= 'date'
 TOKEN_TYPE_BINARY ::= 'bin'
 TOKEN_MARK_TYPES ::= '#types'
-TOKEN_VALUE_INT ::= 0 | (['1'-'9']['0'-'9']*)
-TOKEN_VALUE_FLOAT ::= ('0' ('.' [0-9]*)? ) | ( ['1'-'9']['0'-'9']* ('.' ['0'-'9']*)? )
+TOKEN_VALUE_INT ::= '-'? '0' | (['1'-'9']['0'-'9']*)
+TOKEN_VALUE_FLOAT ::= '-'? ('0' ('.' [0-9]*)? ) | ( ['1'-'9']['0'-'9']* ('.' ['0'-'9']*)? )
 TOKEN_VALUE_TRUE ::= 'true'
 TOKEN_VALUE_FALSE ::= 'false'
 TOKEN_VALUE_STRING ::= '"' (^" | ^('\''"'))* '"'

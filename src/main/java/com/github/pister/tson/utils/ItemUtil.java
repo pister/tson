@@ -61,7 +61,7 @@ public final class ItemUtil {
             }
         }
         if (o.getClass().isArray()) {
-            return arrayToItem(o, o.getClass().getComponentType(), clonedParents);
+            return arrayToItem(o, clonedParents);
         }
         // plain object
         Map<String, Object> properties = objectVisitor.getFields(o);
@@ -116,6 +116,58 @@ public final class ItemUtil {
         return null;
     }
 
+    private static class ArrayWidthDimensions {
+        Object array;
+        int[] dimensions;
+
+        public ArrayWidthDimensions(Object array, int... dimensions) {
+            this.array = array;
+            this.dimensions = dimensions;
+        }
+    }
+
+
+
+    private static ArrayWidthDimensions createArray(Item item, Class<?> clazzComponent) {
+        List<Item> data = (List<Item>) item.getValue();
+        int dimensions = item.getArrayDimensions();
+        if (dimensions == 1) {
+            Object array = Array.newInstance(clazzComponent, data.size());
+            int i = 0;
+            for (Item subItem : data) {
+                Object subObject = itemToObject(subItem);
+                Array.set(array, i, subObject);
+                i++;
+            }
+            return new ArrayWidthDimensions(array, 1);
+        }
+        if (data == null || data.size() == 0) {
+            return new ArrayWidthDimensions(null, 0);
+        }
+
+        List<Object> subObjects = new ArrayList<Object>(data.size());
+        int[] subDimensions = null;
+        for (Item subItem : data) {
+            ArrayWidthDimensions awd = createArray(subItem, clazzComponent);
+            if (subDimensions == null) {
+                subDimensions = awd.dimensions;
+            } else {
+                if (!ArrayUtil.isArrayEquals(subDimensions, awd.dimensions)) {
+                    throw new RuntimeException("there was deference dimensions under same array.");
+                }
+            }
+            subObjects.add(awd.array);
+        }
+        int[] resultDimensions = new int[subDimensions.length + 1];
+        resultDimensions[0] = subObjects.size();
+        System.arraycopy(subDimensions, 0, resultDimensions, 1, subDimensions.length);
+        Object ret = Array.newInstance(clazzComponent, resultDimensions);
+        for (int i = 0, len = subObjects.size(); i < len; i++) {
+            Array.set(ret, i, subObjects.get(i));
+        }
+        return new ArrayWidthDimensions(ret, resultDimensions);
+    }
+
     private static Object toListObject(Item item) {
         List<Item> data = (List<Item>) item.getValue();
         if (item.isArray()) {
@@ -136,14 +188,8 @@ public final class ItemUtil {
                     throw new RuntimeException("not support array for: " + itemType);
                 }
             }
-            Object array = Array.newInstance(clazz, data.size());
-            int i = 0;
-            for (Item subItem : data) {
-                Object subObject = itemToObject(subItem);
-                Array.set(array, i, subObject);
-                i++;
-            }
-            return array;
+            ArrayWidthDimensions arrayWidthDimensions = createArray(item, clazz);
+            return arrayWidthDimensions.array;
         } else {
             Collection collection;
             Class<?> userClass = getUserClass(item);
@@ -217,7 +263,25 @@ public final class ItemUtil {
         }
     }
 
-    private static Item arrayToItem(Object arrayObject, Class<?> componentType, List<Object> parents) {
+    private static ArrayType getArrayTypeAndDimensions(Class<?> arrayType) {
+        int dimensions = 0;
+        Class<?> type = arrayType;
+        while (type.isArray()) {
+            dimensions++;
+            type = type.getComponentType();
+        }
+        ArrayType ret = new ArrayType();
+        ret.dimensions = dimensions;
+        ret.componentType = type;
+        return ret;
+    }
+
+    static class ArrayType {
+        Class<?> componentType;
+        int dimensions;
+    }
+
+    private static Item arrayToItem(Object arrayObject, List<Object> parents) {
         List<Item> items = new ArrayList<Item>();
         for (int i = 0, len = Array.getLength(arrayObject); i < len; i++) {
             Object o = Array.get(arrayObject, i);
@@ -225,12 +289,15 @@ public final class ItemUtil {
             items.add(value);
         }
         Item item = new Item(ItemType.LIST, items);
-        ItemType itemType = Types.getArrayComponentType(componentType);
+
+        ArrayType arrayType = getArrayTypeAndDimensions(arrayObject.getClass());
+        ItemType itemType = Types.getArrayComponentType(arrayType.componentType);
         if (itemType != null) {
             item.setArrayComponentType(itemType);
         } else {
-            item.setArrayComponentUserTypeName(componentType.getCanonicalName());
+            item.setArrayComponentUserTypeName(arrayType.componentType.getCanonicalName());
         }
+        item.setArrayDimensions(arrayType.dimensions);
         item.setArray(true);
         return item;
     }
