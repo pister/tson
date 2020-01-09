@@ -1,5 +1,6 @@
 package com.github.pister.tson;
 
+import com.github.pister.tson.io.FastStringReader;
 import com.github.pister.tson.io.ItemStringWriter;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.parse.Lexer;
@@ -16,7 +17,7 @@ public final class Tsons {
     private Tsons() {}
 
     public static TsonObject parseForTson(String text) {
-        Lexer lexer = new Lexer(new LexerReader(new StringReader(text)));
+        Lexer lexer = new Lexer(new LexerReader(new FastStringReader(text)));
         Parser parser = new Parser(lexer);
         Item item = parser.parse();
         return new TsonObject(item);

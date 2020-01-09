@@ -10,7 +10,18 @@ Java对象的持久化方案的另一种选择，对象持久化成人类可读�
 > > 二进制方案的执行效率本身比文本方案要高，但是牺牲了数据可读性，可调试性，
 以及在某些场景下的显示，传输和存储问题。
 
-### 使用方法
+### 使用方法举例
+> 简单的例子，持久化int
+```
+int a = 123;
+String s = Tsons.toTsonString(map);
+// i32@123
+Integer b = (Integer)Tsons.parseForObject(s);
+Assert.notNull(b);
+Assert.assertEquals(b, a);
+```
+
+> 稍微复杂的例子，持久化Map
 ```
 Map<String, Object> map = new HashMap<String, Object>();
 map.put("intValue", 123);
@@ -24,7 +35,20 @@ list.add(true);
 map.put("myList", list);
 String s = Tsons.toTsonString(map);
 // {dateValue:date@"2020-01-08 17:46:12.908",intValue:i32@123,myList:[str@"hello",i32@123,bool@true],floatValue:f32@1.24,doubleValue:f64@123.456}
-System.out.println(s);
 Object map2 = Tsons.parseForObject(s);
 Assert.assertEquals(map, map2);
 ```
+
+### tson特性
+> #### 持久化支持的类型
+> >类似于json，支持所有JavaBeans，基本类型及其包装类，各种容器类，及其他们的数组，支持多维数组
+> #### 支持循环引用检测
+
+
+### 相关性能测试报告
+> #### 持久化后的数据大小
+| 方案名称 | 原始数据 | 持久化后数据大小 | 相对原数据的比例 |
+——————————————— | ——————————————— | —————————— | ——————————
+| tson | "hello world"| 持久化后数据大小 | 相对原数据的比例 |
+
+> #### 持久化和反持久化的性能相关指标
