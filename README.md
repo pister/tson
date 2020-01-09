@@ -56,5 +56,5 @@ Assert.assertEquals(map, map2);
 | hassian | 24 | 150% | 1 | 253 | 289 |
 
 
-> > > 以上所有测试的平台均为: MacBook Pro/i5 2.4GHz/8G/JVM version 1.8.0_20
+> > 以上所有测试的平台均为: MacBook Pro/i5 2.4GHz/8G/JVM version 1.8.0_20
 
