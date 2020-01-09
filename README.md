@@ -1,4 +1,4 @@
-# tson - a Typed data format like jSON.
+# TSON - a Typed data format like jSON.
 一种带类型的"json"，主要用于解决json反序列化类型丢失问题;
 Java对象的持久化方案的另一种选择，对象持久化成人类可读文本字符串。
 
