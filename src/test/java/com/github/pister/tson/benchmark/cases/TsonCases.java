@@ -165,7 +165,7 @@ public class TsonCases extends TestCase {
 
     public void testHelloWorld() throws IOException {
         final Map<String, Object> params = new HashMap<String, Object>();
-        params.put("n1", "hello world");
+        params.put("n1", "hello world这是一个简单的测试数据123456789");
         testTson(stringBytesLength(params.toString()), params);
         testFastson(stringBytesLength(params.toString()), params);
         testJava(stringBytesLength(params.toString()), params);
