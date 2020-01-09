@@ -19,7 +19,19 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>3.8.1</version>
-            <scope>provided</scope>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.62</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>hessian</groupId>
+            <artifactId>hessian</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
