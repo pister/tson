@@ -61,7 +61,11 @@ public final class ItemUtil {
             }
         }
         if (o.getClass().isArray()) {
-            return arrayToItem(o, clonedParents);
+            if (o.getClass().getComponentType().equals(Byte.TYPE)) {
+                return new Item(ItemType.BINARY, o);
+            } else {
+                return arrayToItem(o, clonedParents);
+            }
         }
         // plain object
         Map<String, Object> properties = objectVisitor.getFields(o);
@@ -90,8 +94,7 @@ public final class ItemUtil {
             case FLOAT64:
                 return ((Number) item.getValue()).doubleValue();
             case BINARY:
-                // TODO
-                return null;
+                return item.getValue();
             case LIST:
                 return toListObject(item);
             case MAP:

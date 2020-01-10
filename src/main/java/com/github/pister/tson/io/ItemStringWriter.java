@@ -7,20 +7,18 @@ import com.github.pister.tson.utils.StringUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Created by songlihuang on 2020/1/6.
  */
 public class ItemStringWriter {
 
-    private static final Charset DEFAULT_CHARSET = Charset.forName("utf-8");
 
     private boolean ignoreNullValue = true;
 
@@ -84,6 +82,7 @@ public class ItemStringWriter {
         stringBuilder.append(item.getType().getTypeName());
         stringBuilder.append(Constants.TYPE_VALUE_SEP);
         stringBuilder.append("\"");
+        stringBuilder.append(Constants.BINARY_VERSION_BASE33);
         writeData(item.getValue());
         stringBuilder.append("\"");
     }
@@ -108,11 +107,7 @@ public class ItemStringWriter {
     }
 
     private String encodeBytes(byte[] data) {
-        return new String(Base33.encode(data), DEFAULT_CHARSET);
-    }
-
-    private byte[] decodeBytes(String s) {
-        return Base33.decode(s.getBytes(DEFAULT_CHARSET));
+        return new String(Base33.encode(data), Constants.DEFAULT_CHARSET);
     }
 
     private void writeUserType(String userTypeName) {

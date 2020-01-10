@@ -223,6 +223,13 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
+    public void testBinary() {
+        byte[] a = new byte[]{'h', 'e', 'l', 'l', 'o'};
+        String s = Tsons.toTsonString(a);
+        Object a2 = Tsons.parseForObject(s);
+        Assert.assertTrue(Arrays.equals(a, (byte[])a2));
+    }
+
     public void testObjects() {
         Person person = new Person();
         person.setAge(42);

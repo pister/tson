@@ -3,6 +3,8 @@ package com.github.pister.tson.parse;
 import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
+import com.github.pister.tson.utils.Base33;
+import com.github.pister.tson.utils.StringUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -139,6 +141,28 @@ public class Parser {
         throw new SyntaxException("need an map, list, or typed value define");
     }
 
+    private byte[] decodeBytes(String s) {
+        return Base33.decode(s.getBytes(Constants.DEFAULT_CHARSET));
+    }
+
+
+    private void handleBinary(Item item) {
+        String s = (String)item.getValue();
+        if (StringUtil.isEmpty(s)) {
+            item.setValue(null);
+            return;
+        }
+        char version = s.charAt(0);
+        switch (version) {
+            case Constants.BINARY_VERSION_BASE33:
+                byte[] data = decodeBytes(s.substring(1));
+                item.setValue(data);
+                break;
+            default:
+                throw new RuntimeException("unknown ");
+        }
+    }
+
     private void castDataForType(Item item) {
         switch (item.getType()) {
             case DATE:
@@ -150,7 +174,7 @@ public class Parser {
                 }
                 break;
             case BINARY:
-                // TODO
+                handleBinary(item);
                 break;
         }
     }

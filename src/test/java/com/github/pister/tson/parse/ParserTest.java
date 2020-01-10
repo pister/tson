@@ -1,14 +1,11 @@
 package com.github.pister.tson.parse;
 
-import com.github.pister.tson.TsonObject;
 import com.github.pister.tson.Tsons;
-import com.github.pister.tson.models.Item;
 import com.github.pister.tson.objects.Contact;
 import com.github.pister.tson.objects.Person;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
