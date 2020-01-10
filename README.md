@@ -15,9 +15,9 @@ Java对象的持久化方案的另一种选择，对象持久化成人类可读�
 > 简单的例子，持久化int
 ```
 int a = 123;
-String s = Tsons.toTsonString(map);
+String s = Tsons.encode(map);
 // i32@123
-Integer b = (Integer)Tsons.parseForObject(s);
+Integer b = (Integer)Tsons.decode(s);
 Assert.notNull(b);
 Assert.assertEquals(b, a);
 ```
@@ -34,9 +34,9 @@ list.add("hello");
 list.add(123);
 list.add(true);
 map.put("myList", list);
-String s = Tsons.toTsonString(map);
+String s = Tsons.encode(map);
 // {dateValue:date@"2020-01-08 17:46:12.908",intValue:i32@123,myList:[str@"hello",i32@123,bool@true],floatValue:f32@1.24,doubleValue:f64@123.456}
-Object map2 = Tsons.parseForObject(s);
+Object map2 = Tsons.decode(s);
 Assert.assertEquals(map, map2);
 ```
 

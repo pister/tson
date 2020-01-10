@@ -33,7 +33,7 @@ public class TsonCases extends TestCase {
     }
 
     private void testTson(int rowSize, final Object srcData) throws UnsupportedEncodingException {
-        final String data = Tsons.toTsonString(srcData);
+        final String data = Tsons.encode(srcData);
         int dataSize = stringBytesLength(data);
         System.out.println("[tson]data size:" + dataSize);
         System.out.println("[tson]size rate:" + ((float) dataSize) / rowSize);
@@ -42,13 +42,13 @@ public class TsonCases extends TestCase {
         actionFor("[tons]serialize time", benchMark, new Action() {
             @Override
             public void run() {
-                Tsons.toTsonString(srcData);
+                Tsons.encode(srcData);
             }
         });
         actionFor("[tson]unserialize time", benchMark, new Action() {
             @Override
             public void run() {
-                Tsons.parseForObject(data);
+                Tsons.decode(data);
             }
         });
     }

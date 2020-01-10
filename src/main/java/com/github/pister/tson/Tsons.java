@@ -14,14 +14,14 @@ public final class Tsons {
 
     private Tsons() {}
 
-    public static Object parseForObject(String text) {
+    public static Object decode(String text) {
         Lexer lexer = new Lexer(new LexerReader(new FastStringReader(text)));
         Parser parser = new Parser(lexer);
         Item item = parser.parse();
         return item.extract();
     }
 
-    public static String toTsonString(Object o) {
+    public static String encode(Object o) {
         ItemStringWriter itemStringWriter = new ItemStringWriter();
         Item item = Item.wrap(o);
         itemStringWriter.write(item);

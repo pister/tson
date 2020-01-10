@@ -35,9 +35,9 @@ public class ParserTest extends TestCase {
         person.setAttr1(new int[]{1,2});
         person.setAttr2(new Integer[]{3, 4});
 
-        String s = Tsons.toTsonString(person);
+        String s = Tsons.encode(person);
 
-        Object object = Tsons.parseForObject(s);
+        Object object = Tsons.decode(s);
         Assert.assertTrue(person.equals(object));
     }
 
