@@ -1,12 +1,10 @@
 package com.github.pister.tson.utils;
 
 import com.github.pister.tson.access.ObjectVisitor;
-import com.github.pister.tson.access.property.ObjectUtil;
 import com.github.pister.tson.access.property.PropertyObjectVisitor;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.common.Types;
 import com.github.pister.tson.models.Item;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.lang.reflect.Array;
 import java.util.*;
