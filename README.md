@@ -15,7 +15,7 @@ Java对象的持久化方案的另一种选择，对象持久化成人类可读�
 > 简单的例子，持久化int
 ```
 int a = 123;
-String s = Tsons.encode(map);
+String s = Tsons.encode(a);
 // i32@123
 Integer b = (Integer)Tsons.decode(s);
 Assert.notNull(b);
