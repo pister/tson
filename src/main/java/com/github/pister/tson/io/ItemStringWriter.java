@@ -59,6 +59,9 @@ public class ItemStringWriter {
             case FLOAT64:
                 writeDirect(item);
                 break;
+            case CHAR:
+                writeString(item.getType().getTypeName(), String.valueOf(item.getValue()));
+                break;
             case STRING:
                 writeString(item.getType().getTypeName(), (String)item.getValue());
                 break;

@@ -39,6 +39,9 @@ public final class Types {
         numberType2ItemTypes.put(Double.class, ItemType.FLOAT64);
         numberType2ItemTypes.put(Double.TYPE, ItemType.FLOAT64);
 
+        numberType2ItemTypes.put(Character.class, ItemType.CHAR);
+        numberType2ItemTypes.put(Character.TYPE, ItemType.CHAR);
+
         class2ItemTypes.putAll(numberType2ItemTypes);
         class2ItemTypes.put(String.class, ItemType.STRING);
         class2ItemTypes.put(Boolean.class, ItemType.BOOL);
@@ -51,6 +54,7 @@ public final class Types {
         arrayComponentType2ItemTypes.put(Long.TYPE, ItemType.INT64);
         arrayComponentType2ItemTypes.put(Float.TYPE, ItemType.FLOAT32);
         arrayComponentType2ItemTypes.put(Double.TYPE, ItemType.FLOAT64);
+        arrayComponentType2ItemTypes.put(Character.TYPE, ItemType.CHAR);
         arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
         arrayComponentType2ItemTypes.put(Boolean.class, ItemType.BOOL);
         arrayComponentType2ItemTypes.put(Date.class, ItemType.DATE);

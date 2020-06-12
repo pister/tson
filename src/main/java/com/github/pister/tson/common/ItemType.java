@@ -14,6 +14,7 @@ public enum ItemType {
     INT64("i64", long.class),
     FLOAT32("f32", float.class),
     FLOAT64("f64", double.class),
+    CHAR("c", Character.class),
     STRING("str", String.class),
     DATE("date", Date.class),
     BINARY("bin", null),

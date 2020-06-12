@@ -18,6 +18,7 @@ public class KeyWords {
         name2keywords.put("i64", TokenType.KW_TYPE_INT64);
         name2keywords.put("f32", TokenType.KW_TYPE_FLOAT32);
         name2keywords.put("f64", TokenType.KW_TYPE_FLOAT64);
+        name2keywords.put("c",  TokenType.KW_TYPE_CHAR);
         name2keywords.put("str", TokenType.KW_TYPE_STRING);
         name2keywords.put("date", TokenType.KW_TYPE_DATE);
         name2keywords.put("bin", TokenType.KW_TYPE_BINARY);

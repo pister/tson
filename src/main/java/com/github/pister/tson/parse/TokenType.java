@@ -24,6 +24,7 @@ public enum TokenType {
     KW_TYPE_INT64, // i64
     KW_TYPE_FLOAT32, // f32
     KW_TYPE_FLOAT64, // f64
+    KW_TYPE_CHAR,   // c
     KW_TYPE_STRING, // str
     KW_TYPE_DATE,   // date
     KW_TYPE_BINARY, // bin

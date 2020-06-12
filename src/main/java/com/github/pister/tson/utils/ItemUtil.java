@@ -39,7 +39,7 @@ public final class ItemUtil {
             return new Item(ItemType.BOOL, o);
         }
         if (o instanceof Character) {
-            return new Item(ItemType.INT16, (short) ((Character) o).charValue());
+            return new Item(ItemType.CHAR, o);
         }
         if (o instanceof Date) {
             return new Item(ItemType.DATE, o);
@@ -79,6 +79,8 @@ public final class ItemUtil {
             case DATE:
             case STRING:
                 return item.getValue();
+            case CHAR:
+                return item.getValue().toString().charAt(0);
             case INT8:
                 return ((Number) item.getValue()).byteValue();
             case INT16:

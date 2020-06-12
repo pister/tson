@@ -352,6 +352,8 @@ public class Parser {
                 return ParseResult.createMatched(ItemType.FLOAT32);
             case KW_TYPE_FLOAT64:
                 return ParseResult.createMatched(ItemType.FLOAT64);
+            case KW_TYPE_CHAR:
+                return ParseResult.createMatched(ItemType.CHAR);
             case KW_TYPE_STRING:
                 return ParseResult.createMatched(ItemType.STRING);
             case KW_TYPE_DATE:
