@@ -3,15 +3,20 @@ package com.github.pister.tson.access.property;
 import com.github.pister.tson.utils.ArrayUtil;
 import com.github.pister.tson.utils.StringUtil;
 
+import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by songlihuang on 2020/1/6.
  */
 public final class ObjectUtil {
+
+    private static final ConcurrentMap<Class<?>, SoftReference<Map<String, Property>>> propertyCache = new ConcurrentHashMap<Class<?>, SoftReference<Map<String, Property>>>();
 
     private ObjectUtil() {}
 
@@ -41,6 +46,13 @@ public final class ObjectUtil {
     }
 
     public static Map<String, Property> findPropertiesFromClass(Class<?> targetClass) {
+        SoftReference<Map<String, Property>> cachedProperties = propertyCache.get(targetClass);
+        if (cachedProperties != null) {
+            Map<String, Property> cachedPropertiesMap = cachedProperties.get();
+            if (cachedPropertiesMap != null) {
+                return cachedPropertiesMap;
+            }
+        }
         Method[] methods = targetClass.getMethods();
         Map<String, Method> readableMethods = new HashMap<String, Method>();
         Map<String, Method> writableMethods = new HashMap<String, Method>();
@@ -58,17 +70,18 @@ public final class ObjectUtil {
             String name = entry.getKey();
             Method readMethod = entry.getValue();
             Method writeMethod = writableMethods.remove(name);
-            Class<?> propertyClass = readMethod.getReturnType();
-            Property property = new Property(name, propertyClass, readMethod, writeMethod);
+           // Class<?> propertyClass = readMethod.getReturnType();
+            Property property = new Property(name, readMethod, writeMethod);
             ret.put(name, property);
         }
         for (Map.Entry<String, Method> entry : writableMethods.entrySet()) {
             String name = entry.getKey();
             Method writeMethod = entry.getValue();
-            Class<?> propertyClass = writeMethod.getParameterTypes()[0];
-            Property property = new Property(name, propertyClass, null, writeMethod);
+           // Class<?> propertyClass = writeMethod.getParameterTypes()[0];
+            Property property = new Property(name, null, writeMethod);
             ret.put(name, property);
         }
+        propertyCache.put(targetClass, new SoftReference<Map<String, Property>>(ret));
         return ret;
     }
 

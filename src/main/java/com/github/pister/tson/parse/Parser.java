@@ -3,7 +3,7 @@ package com.github.pister.tson.parse;
 import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
-import com.github.pister.tson.utils.Base33;
+import com.github.pister.tson.utils.Base629;
 import com.github.pister.tson.utils.StringUtil;
 
 import java.text.ParseException;
@@ -142,7 +142,7 @@ public class Parser {
     }
 
     private byte[] decodeBytes(String s) {
-        return Base33.decode(s.getBytes(Constants.DEFAULT_CHARSET));
+        return Base629.decode(s.getBytes(Constants.DEFAULT_CHARSET));
     }
 
 

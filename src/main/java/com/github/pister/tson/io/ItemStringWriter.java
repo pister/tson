@@ -2,7 +2,7 @@ package com.github.pister.tson.io;
 
 import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.models.Item;
-import com.github.pister.tson.utils.Base33;
+import com.github.pister.tson.utils.Base629;
 import com.github.pister.tson.utils.StringUtil;
 
 import java.io.IOException;
@@ -110,7 +110,7 @@ public class ItemStringWriter {
     }
 
     private String encodeBytes(byte[] data) {
-        return new String(Base33.encode(data), Constants.DEFAULT_CHARSET);
+        return new String(Base629.encode(data), Constants.DEFAULT_CHARSET);
     }
 
     private void writeUserType(String userTypeName) {

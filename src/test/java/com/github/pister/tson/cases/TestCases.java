@@ -48,7 +48,7 @@ public class TestCases extends TestCase {
     }
 
     public void testBytesArray() throws UnsupportedEncodingException {
-        byte[] buf = "hello world\0\1".getBytes("utf-8");
+        byte[] buf = "hello world\u0001\u0001".getBytes("utf-8");
         String s = Tsons.encode(buf);
         byte[] buf2 = (byte[])Tsons.decode(s);
         Assert.assertEquals(buf.length, buf2.length);
@@ -98,8 +98,10 @@ public class TestCases extends TestCase {
         mixList.add(3.14);
         mixList.add((byte)12);
         mixList.add('x');
+        mixList.add('\"');
         mixList.add((short)15);
         String s = Tsons.encode(mixList);
+        System.out.println(s);
         List<Object> list2 = (List<Object>)Tsons.decode(s);
         Assert.assertEquals(mixList.size(), list2.size());
         for (int i = 0, size = mixList.size(); i < size; i++) {

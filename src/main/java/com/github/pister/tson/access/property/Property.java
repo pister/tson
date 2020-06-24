@@ -14,8 +14,6 @@ public class Property {
 
     private String name;
 
-    private Class propertyClass;
-
     private Method readMethod;
 
     private Method writeMethod;
@@ -24,10 +22,9 @@ public class Property {
 
     }
 
-    public Property(String name, Class propertyClass, Method readMethod, Method writeMethod) {
+    public Property(String name, Method readMethod, Method writeMethod) {
         super();
         this.name = name;
-        this.propertyClass = propertyClass;
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
     }
