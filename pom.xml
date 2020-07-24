@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.pister</groupId>
     <artifactId>tson</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
     <name>tson</name>
     <url>http://maven.apache.org</url>
@@ -63,4 +63,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

@@ -254,4 +254,31 @@ public class TsonsTest extends TestCase {
         Person person2 = (Person) Tsons.decode(s);
         Assert.assertTrue(person.equals(person2));
     }
+
+    public static class EmptyObject {
+        private String name;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            EmptyObject that = (EmptyObject) o;
+
+            return name != null ? name.equals(that.name) : that.name == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return name != null ? name.hashCode() : 0;
+        }
+    }
+
+    public void testEmpty() {
+        EmptyObject eo = new EmptyObject();
+        String s = Tsons.encode(eo);
+        System.out.println(s);
+        EmptyObject e = (EmptyObject) Tsons.decode(s);
+        Assert.assertTrue(e.equals(eo));
+    }
 }

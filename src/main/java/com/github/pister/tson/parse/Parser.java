@@ -276,6 +276,7 @@ public class Parser {
         // <name-item-pair> ::= TOKEN_ID TOKEN_COLON <item>
         Token idToken = lexer.nextToken();
         if (idToken.getTokenType() != TokenType.ID) {
+            lexer.pushBack(idToken);
             return ParseResult.createNotMatch();
         }
         if (!lexer.popIfMatchesType(TokenType.COLON)) {
