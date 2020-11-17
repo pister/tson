@@ -3,11 +3,16 @@ package com.github.pister.tson.access.property;
 import com.github.pister.tson.utils.ArrayUtil;
 import com.github.pister.tson.utils.StringUtil;
 
+import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -17,6 +22,19 @@ import java.util.concurrent.ConcurrentMap;
 public final class ObjectUtil {
 
     private static final ConcurrentMap<Class<?>, SoftReference<Map<String, Property>>> propertyCache = new ConcurrentHashMap<Class<?>, SoftReference<Map<String, Property>>>();
+
+    private static Class<? extends Annotation> TRANSIENT_CLASS = null;
+    private static Method TRANSIENT_VALUE_METHOD = null;
+
+    static {
+        try {
+            TRANSIENT_CLASS = (Class<? extends Annotation>)Class.forName("java.beans.Transient");
+            TRANSIENT_VALUE_METHOD = TRANSIENT_CLASS.getMethod("value");
+        } catch (Exception e) {
+            // ignre
+        }
+    }
+
 
     private ObjectUtil() {}
 
@@ -45,6 +63,39 @@ public final class ObjectUtil {
         return ret;
     }
 
+    private static Set<String> getTransientProperty(Class<?> targetClass) {
+        Set<String> ret = new HashSet<String>();
+        // transient field
+        Field[] fields = targetClass.getDeclaredFields();
+        for (Field field : fields) {
+            if ((field.getModifiers() & Modifier.TRANSIENT) == Modifier.TRANSIENT) {
+                ret.add(field.getName());
+            }
+        }
+        return ret;
+    }
+
+    private static boolean isTransientMethod(Method method) {
+        if (TRANSIENT_CLASS == null) {
+            return false;
+        }
+        Annotation transientAnnotation = method.getAnnotation(TRANSIENT_CLASS);
+        if (transientAnnotation == null) {
+            return false;
+        }
+        try {
+            Boolean value = (Boolean)TRANSIENT_VALUE_METHOD.invoke(transientAnnotation);
+            if (value == null) {
+                return false;
+            }
+            return value.booleanValue();
+        } catch (IllegalAccessException e) {
+            return false;
+        } catch (InvocationTargetException e) {
+            return false;
+        }
+    }
+
     public static Map<String, Property> findPropertiesFromClass(Class<?> targetClass) {
         SoftReference<Map<String, Property>> cachedProperties = propertyCache.get(targetClass);
         if (cachedProperties != null) {
@@ -54,14 +105,25 @@ public final class ObjectUtil {
             }
         }
         Method[] methods = targetClass.getMethods();
+        Set<String> transientProperties = getTransientProperty(targetClass);
         Map<String, Method> readableMethods = new HashMap<String, Method>();
         Map<String, Method> writableMethods = new HashMap<String, Method>();
         for (Method method : methods) {
+            if (isTransientMethod(method)) {
+                continue;
+            }
+
             if (isReadableMethod(method)) {
                 String propertyName = getPropertyName(method.getName());
+                if (transientProperties.contains(propertyName)) {
+                    continue;
+                }
                 readableMethods.put(propertyName, method);
             } else if (isWritableMethod(method)) {
                 String propertyName = getPropertyName(method.getName());
+                if (transientProperties.contains(propertyName)) {
+                    continue;
+                }
                 writableMethods.put(propertyName, method);
             }
         }

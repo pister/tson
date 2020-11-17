@@ -1,5 +1,6 @@
 package com.github.pister.tson.objects;
 
+import java.beans.Transient;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,8 @@ public class Person {
     private Integer[] attr2;
 
     private int[][] myMatrix;
+
+    private String transientValue;
 
     public int[] getAttr1() {
         return attr1;
@@ -127,6 +130,15 @@ public class Person {
 
     public void setMyMatrix(int[][] myMatrix) {
         this.myMatrix = myMatrix;
+    }
+
+    @Transient
+    public String getTransientValue() {
+        return transientValue;
+    }
+
+    public void setTransientValue(String transientValue) {
+        this.transientValue = transientValue;
     }
 
     @Override

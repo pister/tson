@@ -138,6 +138,7 @@ public class TestCases extends TestCase {
             person.setMarried(true);
             person.setContacts(Arrays.asList(new Contact("name1", "133"), new Contact("name2", "134")));
             person.setWeight(80);
+            person.setTransientValue("xxx");
             personList.add(person);
         }
         String s = Tsons.encode(personList);
