@@ -11,7 +11,12 @@ public class LexerTest extends TestCase {
 
     public void testParseToken() {
         String s = "#types{0:com.github.pister.tson.objects.Person,1:com.github.pister.tson.objects.Contact}\n" +
-                "#0@{address:[str@\"xx\",str@\"yy\"],mobiles:+str@[str@\"123\",str@\"555\"],name:str@\"Jack\",birth:date@\"2020-01-07 17:45:16.966\",weight:i64@0,attr2:+i32@[i32@3,i32@4],attr1:+i32@[i32@1,i32@2],married:bool@true,age:i32@42,contacts:[#1@{name:str@\"Peter\",mobile:str@\"133\"},#1@{name:str@\"Tom\",mobile:str@\"134\"}],attrs:{name2:str@\"xxx\",name1:i32@123}}\n";
+                "#0@{address:[str@\"xx\",str@\"yy\"],mobiles:+str@[str@\"123\",str@\"555\"],name:str@\"Jack\"," +
+                "birth:date@\"2020-01-07 17:45:16.966\",weight:i64@0,attr2:+i32@[i32@3,i32@4],attr1:+i32@[i32@1,i32@2]," +
+                "married:bool@true,age:i32@42,contacts:" +
+                "[#1@{name:str@\"Peter\",mobile:str@\"133\"},#1@{name:str@\"Tom\",mobile:str@\"134\"}]," +
+                "attrs:{name2:str@\"xxx\",name1:i32@123,doubleValue:f64@1.2E-12,floatValue:f32@1.3E-6}}\n";
+
         Lexer lexer = new Lexer(new LexerReader(new StringReader(s)));
         for (;;) {
             Token token = lexer.nextToken();

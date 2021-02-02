@@ -222,6 +222,14 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
+    public void testVerySmallDouble() {
+        double a = -1.24e-12;
+        String s = Tsons.encode(a);
+        Object a2 = Tsons.decode(s);
+        Assert.assertEquals(a, a2);
+    }
+
+
     public void testBinary() {
         byte[] a = new byte[]{'h', 'e', 'l', 'l', 'o'};
         String s = Tsons.encode(a);
@@ -271,6 +279,14 @@ public class TsonsTest extends TestCase {
         @Override
         public int hashCode() {
             return name != null ? name.hashCode() : 0;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 

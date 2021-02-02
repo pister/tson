@@ -20,11 +20,12 @@ public class TestCases extends TestCase {
         params.put("byte_v", (byte) 10);
         params.put("short_v", (short) 20);
         params.put("char_v", 'a');
-        params.put("int_v", 40);
+        params.put("int_v", -40);
         params.put("long_v", 80L);
         params.put("float_v", (float) Math.PI);
         params.put("double_v", Math.E);
         params.put("str_v", "hello世界");
+        params.put("empty_str", "");
         params.put("date_v", new Date());
         String s = Tsons.encode(params);
         Map<String, Object> paramsDecoded = (Map<String, Object>) Tsons.decode(s);
@@ -149,6 +150,7 @@ public class TestCases extends TestCase {
             Assert.assertEquals(personList.get(i), personList2.get(i));
         }
     }
+
 
 
     private static boolean floatEquals(float f1, float f2) {

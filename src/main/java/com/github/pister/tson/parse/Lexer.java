@@ -52,7 +52,7 @@ public class Lexer {
         Token nextToken() {
             int c = lexerReader.nextChar();
             out_for:
-            for (;;) {
+            for (; ; ) {
                 switch (c) {
                     case ' ':
                     case '\n':
@@ -61,7 +61,7 @@ public class Lexer {
                         c = lexerReader.nextChar();
                         continue;
                     default:
-                       break out_for;
+                        break out_for;
                 }
             }
             if (c < 0) {
@@ -109,7 +109,7 @@ public class Lexer {
             if (isAlpha(c) || c == '_' || c == '$') {
                 return handleId(c);
             }
-            return new Token(TokenType.ERROR, "unknown char: " + (char)c);
+            return new Token(TokenType.ERROR, "unknown char: " + (char) c);
         }
 
         private Token handleId(int c) {
@@ -209,7 +209,10 @@ public class Lexer {
             long intPart = 0;
             double floatPart = 0;
             long minus = 1;
-            if (c == '-' ) {
+            boolean hasPowerPart = false;
+            Long powerPart = null;
+            boolean powerPartMinus = false;
+            if (c == '-') {
                 minus = -1;
                 int nextC = lexerReader.peek();
                 if (!isDigit(nextC) && nextC != '.') {
@@ -227,10 +230,18 @@ public class Lexer {
                 c = lexerReader.nextChar();
             }
 
+
             for (; ; ) {
                 if (dealIntPart) {
                     intPart *= 10;
                     intPart += c - '0';
+                } else if (hasPowerPart) {
+                    if (powerPart == null) {
+                        powerPart = (long)(c - '0');
+                    } else {
+                        powerPart *= 10;
+                        powerPart += c - '0';
+                    }
                 } else {
                     floatPart += floatBase * (c - '0');
                     floatBase /= 10;
@@ -245,7 +256,32 @@ public class Lexer {
                         lexerReader.nextChar(); // pop '.'
                         c = lexerReader.nextChar();
                     }
+                } else if (c == 'E' || c == 'e') {
+                    if (hasPowerPart) {
+                        return new Token(TokenType.ERROR, "Duplicate E part for number");
+                    } else {
+                        lexerReader.nextChar(); // pop '.'
+                        c = lexerReader.nextChar();
+                        if (c == '-') {
+                            powerPartMinus = true;
+                            c = lexerReader.nextChar();
+                        }
+                        hasPowerPart = true;
+                    }
                 } else if (!isDigit(c)) {
+                    if (powerPart != null) {
+                        double real = minus * (intPart + floatPart);
+                        if (powerPartMinus) {
+                            for (int i = 0; i < powerPart; i++) {
+                                real /= 10;
+                            }
+                        } else {
+                            for (int i = 0; i < powerPart; i++) {
+                                real *= 10;
+                            }
+                        }
+                        return new Token(TokenType.VALUE_FLOAT, real);
+                    }
                     if (hasFloat) {
                         return new Token(TokenType.VALUE_FLOAT, minus * (intPart + floatPart));
                     } else {
