@@ -222,11 +222,19 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
-    public void testVerySmallDouble() {
-        double a = -1.24e-12;
-        String s = Tsons.encode(a);
-        Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+    public void testVerySmallOrBigDouble() {
+        double smallNumber = -1.24e-12;
+        {
+            String s = Tsons.encode(smallNumber);
+            Object a2 = Tsons.decode(s);
+            Assert.assertEquals(smallNumber, a2);
+        }
+        double bigNumber = 3.20e13;
+        {
+            String s = Tsons.encode(bigNumber);
+            Object a2 = Tsons.decode(s);
+            Assert.assertEquals(bigNumber, a2);
+        }
     }
 
 
