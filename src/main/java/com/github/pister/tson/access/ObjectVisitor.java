@@ -9,6 +9,6 @@ public interface ObjectVisitor {
 
     Map<String, Object> getFields(Object object);
 
-    void setFields(Object object, Map<String, Object> fields);
+    void setFields(Object object, Map<Object, Object> fields);
 
 }

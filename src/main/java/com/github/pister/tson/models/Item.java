@@ -231,4 +231,24 @@ public class Item {
     public void setArrayDimensions(int arrayDimensions) {
         this.arrayDimensions = arrayDimensions;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        Item item = (Item) object;
+
+        if (getType() != item.getType()) return false;
+        if (getValue() != null ? !getValue().equals(item.getValue()) : item.getValue() != null) return false;
+        return getUserTypeName() != null ? getUserTypeName().equals(item.getUserTypeName()) : item.getUserTypeName() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getType() != null ? getType().hashCode() : 0;
+        result = 31 * result + (getValue() != null ? getValue().hashCode() : 0);
+        result = 31 * result + (getUserTypeName() != null ? getUserTypeName().hashCode() : 0);
+        return result;
+    }
 }

@@ -101,7 +101,7 @@ public class Parser {
     }
 
 
-    private static class ItemWithType {
+    public static class ItemWithType {
         DefinedType definedType;
         Item item;
 
@@ -109,6 +109,7 @@ public class Parser {
             this.definedType = definedType;
             this.item = item;
         }
+
     }
 
     private ParseResult<ItemWithType> defineDetail() {
@@ -205,12 +206,30 @@ public class Parser {
             this.itemType = itemType;
             this.userType = userType;
         }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (object == null || getClass() != object.getClass()) return false;
+
+            DefinedType that = (DefinedType) object;
+
+            if (itemType != that.itemType) return false;
+            return userType != null ? userType.equals(that.userType) : that.userType == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = itemType != null ? itemType.hashCode() : 0;
+            result = 31 * result + (userType != null ? userType.hashCode() : 0);
+            return result;
+        }
     }
 
 
     private ParseResult<Item> defineDetailContent() {
         // <define-detail-content> ::= <property-define-detail-content> | <list-define-detail-content>
-        ParseResult<Map<String, Item>> propertyDefineDetail = propertyDefineDetailContent();
+        ParseResult<Map<Item, Item>> propertyDefineDetail = propertyDefineDetailContent();
         if (propertyDefineDetail.isMatches()) {
             return ParseResult.createMatched(new Item(ItemType.MAP, propertyDefineDetail.getValue()));
         }
@@ -221,35 +240,38 @@ public class Parser {
         return ParseResult.createNotMatch();
     }
 
-    private ParseResult<Map<String, Item>> propertyDefineDetailContent() {
+    private ParseResult<Map<Item, Item>> propertyDefineDetailContent() {
         // <property-define-detail-content> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
         if (!lexer.popIfMatchesType(TokenType.PROPERTY_BEGIN)) {
             return ParseResult.createNotMatch();
         }
-        Map<String, Item> propertyContent = propertyContent();
+        Map<Item, Item> propertyContent = propertyContent();
         if (!lexer.popIfMatchesType(TokenType.PROPERTY_END)) {
             throw new SyntaxException("miss } after property define");
         }
         return ParseResult.createMatched(propertyContent);
     }
 
-    private Map<String, Item> propertyContent() {
+    private Map<Item, Item> propertyContent() {
         // <property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*
-        Map<String, Item> ret = new HashMap<String, Item>();
-        ParseResult<NameAndItem> nameItem = nameItemPair();
+        Map<Item, Item> ret = new HashMap<Item, Item>();
+        ParseResult<KeyAndItem> nameItem = keyItemPair();
         if (!nameItem.isMatches()) {
             return ret;
         }
-        ret.put(nameItem.getValue().getName(), nameItem.getValue().getItem());
+        if (nameItem.getValue() == null) {
+            return ret;
+        }
+        ret.put(nameItem.getValue().getKey(), nameItem.getValue().getItem());
         for (;;) {
             if (!lexer.popIfMatchesType(TokenType.COMMA)) {
                 break;
             }
-            nameItem = nameItemPair();
+            nameItem = keyItemPair();
             if (!nameItem.isMatches()) {
                 throw new SyntaxException("need an name after ,");
             }
-            ret.put(nameItem.getValue().getName(), nameItem.getValue().getItem());
+            ret.put(nameItem.getValue().getKey(), nameItem.getValue().getItem());
         }
         return ret;
     }
@@ -272,7 +294,25 @@ public class Parser {
         }
     }
 
-    private ParseResult<NameAndItem> nameItemPair() {
+    static class KeyAndItem {
+        Item key;
+        Item item;
+
+        public KeyAndItem(Item key, Item item) {
+            this.key = key;
+            this.item = item;
+        }
+
+        public Item getKey() {
+            return key;
+        }
+
+        public Item getItem() {
+            return item;
+        }
+    }
+
+    private ParseResult<NameAndItem> nameItemPair2() {
         // <name-item-pair> ::= TOKEN_ID TOKEN_COLON <item>
         Token idToken = lexer.nextToken();
         if (idToken.getTokenType() != TokenType.ID) {
@@ -284,6 +324,47 @@ public class Parser {
         }
         Item item = item();
         return ParseResult.createMatched(new NameAndItem((String)idToken.getValue(), item));
+    }
+
+    private ParseResult<KeyAndItem> keyItemPair() {
+        // <key-item-pair> ::= <key-item-key> TOKEN_COLON <item>
+        ParseResult<Item> keyResult = keyItemKey();
+        if (!keyResult.isMatches()) {
+            return ParseResult.createNotMatch();
+        }
+        if (keyResult.getValue() == null) {
+            return ParseResult.createMatched(null);
+        }
+        if (!lexer.popIfMatchesType(TokenType.COLON)) {
+            throw new SyntaxException("miss : after name");
+        }
+        Item item = item();
+        return ParseResult.createMatched(new KeyAndItem(keyResult.getValue(), item));
+
+    }
+
+    private ParseResult<Item> keyItemKey() {
+        // <key-item-key> ::= TOKEN_ID | <define-detail>
+        Token idToken = lexer.nextToken();
+        if (idToken.getTokenType() == TokenType.ID) {
+            return ParseResult.createMatched(new Item(ItemType.STRING, idToken.getValue()));
+        }
+        lexer.pushBack(idToken);
+        if (idToken.getTokenType() == TokenType.PROPERTY_END) {
+            // End of keyItemKey
+            return ParseResult.createMatched(null);
+        }
+
+        ParseResult<ItemWithType> itemWithTypeParseResult = defineDetail();
+        if (!itemWithTypeParseResult.isMatches()) {
+            return ParseResult.createNotMatch();
+        }
+        ItemWithType itemWithType = itemWithTypeParseResult.getValue();
+        Item item = itemWithType.item;
+        if (itemWithType.definedType != null) {
+            item.setUserTypeName(itemWithType.definedType.userType);
+        }
+        return ParseResult.createMatched(item);
     }
 
 

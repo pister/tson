@@ -149,13 +149,13 @@ public class ItemStringWriter {
     }
 
     private void writeMap(Item item) {
-        Map<String, Item> map = (Map<String, Item>)item.getValue();
+        Map<Object, Item> map = (Map<Object, Item>)item.getValue();
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             writeUserType(item.getUserTypeName());
         }
         stringBuilder.append(Constants.MAP_BEGIN);
         boolean first = true;
-        for (Map.Entry<String, Item> entry : map.entrySet()) {
+        for (Map.Entry<Object, Item> entry : map.entrySet()) {
             if (ignoreNullValue && entry.getValue() == null) {
                 continue;
             }
@@ -164,7 +164,13 @@ public class ItemStringWriter {
             } else {
                 stringBuilder.append(Constants.COMMA);
             }
-            stringBuilder.append(entry.getKey());
+            Object key = entry.getKey();
+            if (key instanceof Item) {
+                write((Item)key);
+            } else {
+                stringBuilder.append(entry.getKey());
+            }
+
             stringBuilder.append(Constants.COLON);
             write(entry.getValue());
         }

@@ -53,7 +53,7 @@ public class TsonsTest extends TestCase {
         String[] a = new String[]{"hello", "world"};
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        String[] b = (String[])a2;
+        String[] b = (String[]) a2;
         Assert.assertEquals(a.length, b.length);
         for (int i = 0; i < a.length; i++) {
             Assert.assertEquals(a[i], b[i]);
@@ -64,7 +64,7 @@ public class TsonsTest extends TestCase {
         int[] a = new int[]{1, 4, 5};
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        int[] b = (int[])a2;
+        int[] b = (int[]) a2;
         Assert.assertEquals(a.length, b.length);
         for (int i = 0; i < a.length; i++) {
             Assert.assertEquals(a[i], b[i]);
@@ -94,13 +94,13 @@ public class TsonsTest extends TestCase {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 3; j++) {
                 for (int k = 0; k < 4; k++) {
-                   array3d[i][j][k] = i * 100 + j * 10 + k;
+                    array3d[i][j][k] = i * 100 + j * 10 + k;
                 }
             }
         }
         String s1 = Tsons.encode(array3d);
         Object o2 = Tsons.decode(s1);
-        int[][][] array3d2 = (int[][][])o2;
+        int[][][] array3d2 = (int[][][]) o2;
         Assert.assertEquals(array3d.length, array3d2.length);
         for (int i = 0; i < array3d.length; i++) {
             int[][] a1 = array3d[i];
@@ -242,7 +242,7 @@ public class TsonsTest extends TestCase {
         byte[] a = new byte[]{'h', 'e', 'l', 'l', 'o'};
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertTrue(Arrays.equals(a, (byte[])a2));
+        Assert.assertTrue(Arrays.equals(a, (byte[]) a2));
     }
 
     public void testObjects() {
@@ -271,23 +271,10 @@ public class TsonsTest extends TestCase {
         Assert.assertTrue(person.equals(person2));
     }
 
-    public static class EmptyObject {
+    public static class FooObject {
         private String name;
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            EmptyObject that = (EmptyObject) o;
-
-            return name != null ? name.equals(that.name) : that.name == null;
-        }
-
-        @Override
-        public int hashCode() {
-            return name != null ? name.hashCode() : 0;
-        }
+        private int age;
 
         public String getName() {
             return name;
@@ -296,29 +283,70 @@ public class TsonsTest extends TestCase {
         public void setName(String name) {
             this.name = name;
         }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (object == null || getClass() != object.getClass()) return false;
+
+            FooObject fooObject = (FooObject) object;
+
+            if (getAge() != fooObject.getAge()) return false;
+            return getName() != null ? getName().equals(fooObject.getName()) : fooObject.getName() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getName() != null ? getName().hashCode() : 0;
+            result = 31 * result + getAge();
+            return result;
+        }
     }
 
     public void testEmpty() {
-        EmptyObject eo = new EmptyObject();
+        FooObject eo = new FooObject();
         String s = Tsons.encode(eo);
         System.out.println(s);
-        EmptyObject e = (EmptyObject) Tsons.decode(s);
+        FooObject e = (FooObject) Tsons.decode(s);
         Assert.assertTrue(e.equals(eo));
     }
 
-    public void testIntegerKeyMap() {
-        // key not support int - type
-        try {
-            Map<String, String> m = new HashMap<String, String>();
-            m.put("12", "abc");
-            String s = Tsons.encode(m);
-            // s = "{i32@12:str@\"abc\"}";
-            System.out.println(s);
-            Object e = Tsons.decode(s);
-            Assert.assertTrue(e.equals(m));
-        } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("the key of map only supports identify string"));
+    public void testObjectKeyMap() {
+        Map<FooObject, String> m = new HashMap<FooObject, String>();
+        {
+            FooObject key1 = new FooObject();
+            key1.setName("name1");
+            key1.setAge(12);
+            m.put(key1, "abc122");
         }
+        {
+            FooObject key1 = new FooObject();
+            key1.setName("name2");
+            key1.setAge(13);
+            m.put(key1, "abc123");
+        }
+        String s = Tsons.encode(m);
+        System.out.println(s);
+        Object e = Tsons.decode(s);
+        Assert.assertTrue(e.equals(m));
+    }
+
+    public void testIntegerKeyMap() {
+        Map<Integer, String> m = new HashMap<Integer, String>();
+        m.put(123, "abc");
+        m.put(124, "aaa");
+        String s = Tsons.encode(m);
+        System.out.println(s);
+        Object e = Tsons.decode(s);
+        Assert.assertTrue(e.equals(m));
     }
 
 }

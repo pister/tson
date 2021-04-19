@@ -5,6 +5,7 @@ import com.github.pister.tson.access.property.PropertyObjectVisitor;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.common.Types;
 import com.github.pister.tson.models.Item;
+import com.github.pister.tson.parse.Parser;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -221,11 +222,17 @@ public final class ItemUtil {
     }
 
     private static Object toMapObject(Item item) {
-        Map<String, Item> srcMap = (Map<String, Item>) item.getValue();
+        Map<Object, Item> srcMap = (Map<Object, Item>) item.getValue();
 
-        Map<String, Object> destMap = new HashMap<String, Object>();
-        for (Map.Entry<String, Item> entry : srcMap.entrySet()) {
-            destMap.put(entry.getKey(), itemToObject(entry.getValue()));
+        Map<Object, Object> destMap = new HashMap<Object, Object>();
+        for (Map.Entry<Object, Item> entry : srcMap.entrySet()) {
+            Object key = entry.getKey();
+            if (key instanceof Item) {
+                destMap.put(itemToObject((Item)key), itemToObject(entry.getValue()));
+            } else {
+                destMap.put(entry.getKey(), itemToObject(entry.getValue()));
+
+            }
         }
         Class<?> userClass = getUserClass(item);
         if (userClass == null) {
@@ -318,12 +325,14 @@ public final class ItemUtil {
     private static final Pattern MAP_KEY_PATTERN = Pattern.compile("[a-zA-Z_$][a-zA-Z_$\\d]*");
 
     private static Item mapToItem(Map<?, ?> m, String userTypeName, List<Object> parents) {
-        Map<String, Item> tsonMap = new LinkedHashMap<String, Item>();
+        Map<Item, Item> tsonMap = new LinkedHashMap<Item, Item>();
         for (Map.Entry<?, ?> entry : m.entrySet()) {
             Object keyObject = entry.getKey();
             if (keyObject == null) {
                 continue;
             }
+
+            /*
             if (!(keyObject instanceof String)) {
                 throw new RuntimeException("the key of map only supports identify string, regex patterns are [a-zA-Z_$][a-zA-Z_$\\d]*");
             }
@@ -331,10 +340,17 @@ public final class ItemUtil {
             if (!MAP_KEY_PATTERN.matcher(key).matches()) {
                 throw new RuntimeException("the key of map only supports identify string, regex patterns are [a-zA-Z_$][a-zA-Z_$\\d]*");
             }
+            */
 
             Object o = entry.getValue();
             Item value = wrapItemImpl(o, copyList(parents));
-            tsonMap.put(key, value);
+            if (keyObject instanceof String) {
+                tsonMap.put(wrapItem(keyObject.toString()), value);
+            } else {
+                tsonMap.put(wrapItem(keyObject), value);
+            }
+
+
         }
         return new Item(ItemType.MAP, tsonMap, userTypeName);
     }

@@ -14,10 +14,10 @@ public class PropertyObjectVisitor implements ObjectVisitor {
     }
 
     @Override
-    public void setFields(Object object, Map<String, Object> fields) {
+    public void setFields(Object object, Map<Object, Object> fields) {
         Map<String, Property> propertyMap = ObjectUtil.findPropertiesFromClass(object.getClass());
         for (Map.Entry<String, Property> entry : propertyMap.entrySet()) {
-            String name = entry.getKey();
+            Object name = entry.getKey();
             Property property = entry.getValue();
             Object value = fields.get(name);
             if (value == null) {
