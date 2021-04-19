@@ -322,8 +322,6 @@ public final class ItemUtil {
         return new Item(ItemType.LIST, items, userTypeName);
     }
 
-    private static final Pattern MAP_KEY_PATTERN = Pattern.compile("[a-zA-Z_$][a-zA-Z_$\\d]*");
-
     private static Item mapToItem(Map<?, ?> m, String userTypeName, List<Object> parents) {
         Map<Item, Item> tsonMap = new LinkedHashMap<Item, Item>();
         for (Map.Entry<?, ?> entry : m.entrySet()) {
@@ -331,16 +329,6 @@ public final class ItemUtil {
             if (keyObject == null) {
                 continue;
             }
-
-            /*
-            if (!(keyObject instanceof String)) {
-                throw new RuntimeException("the key of map only supports identify string, regex patterns are [a-zA-Z_$][a-zA-Z_$\\d]*");
-            }
-            String key = keyObject.toString();
-            if (!MAP_KEY_PATTERN.matcher(key).matches()) {
-                throw new RuntimeException("the key of map only supports identify string, regex patterns are [a-zA-Z_$][a-zA-Z_$\\d]*");
-            }
-            */
 
             Object o = entry.getValue();
             Item value = wrapItemImpl(o, copyList(parents));
