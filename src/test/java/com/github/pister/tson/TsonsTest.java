@@ -305,4 +305,20 @@ public class TsonsTest extends TestCase {
         EmptyObject e = (EmptyObject) Tsons.decode(s);
         Assert.assertTrue(e.equals(eo));
     }
+
+    public void testIntegerKeyMap() {
+        // key not support int - type
+        try {
+            Map<String, String> m = new HashMap<String, String>();
+            m.put("12", "abc");
+            String s = Tsons.encode(m);
+            // s = "{i32@12:str@\"abc\"}";
+            System.out.println(s);
+            Object e = Tsons.decode(s);
+            Assert.assertTrue(e.equals(m));
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("the key of map only supports identify string"));
+        }
+    }
+
 }
