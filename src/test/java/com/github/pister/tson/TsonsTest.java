@@ -340,11 +340,19 @@ public class TsonsTest extends TestCase {
     }
 
     public void testIntegerKeyMap() {
-        Map<Integer, String> m = new HashMap<Integer, String>();
+        Map<Object, String> m = new HashMap<Object, String>();
         m.put(123, "abc");
         m.put(124, "aaa");
         String s = Tsons.encode(m);
         System.out.println(s);
+        Object e = Tsons.decode(s);
+        Assert.assertTrue(e.equals(m));
+    }
+
+    public void testKeyForOldVersionMap() {
+        Map<Object, String> m = new HashMap<Object, String>();
+        m.put("a12", "abc");
+        String s = "{a12:str@\"abc\"}";
         Object e = Tsons.decode(s);
         Assert.assertTrue(e.equals(m));
     }
