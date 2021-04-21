@@ -15,8 +15,7 @@
 <property-define-detail-content> ::= TOKEN_PROPERTY_BEGIN <property-content> TOKEN_PROPERTY_END
 <list-define-detail-content> ::= TOKEN_LIST_BEGIN <list-content> TOKEN_LIST_END
 <list-content> ::= (<item> (TOKEN_COMMA <item> )*)?
-<property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*)?
-<name-item-pair> ::= TOKEN_ID TOKEN_COLON <item>
+<property-content> ::= (<key-item-pair> (TOKEN_COMMA <key-item-pair> )*)?
 
 <key-item-pair> ::= <key-item-key> TOKEN_COLON <item>
 <key-item-key> ::= TOKEN_ID | <define-detail>

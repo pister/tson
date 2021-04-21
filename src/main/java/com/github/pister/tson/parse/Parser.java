@@ -253,7 +253,7 @@ public class Parser {
     }
 
     private Map<Item, Item> propertyContent() {
-        // <property-content> ::= (<name-item-pair> (TOKEN_COMMA <name-item-pair> )*
+        // <property-content> ::= (<key-item-pair> (TOKEN_COMMA <key-item-pair> )*
         Map<Item, Item> ret = new HashMap<Item, Item>();
         ParseResult<KeyAndItem> nameItem = keyItemPair();
         if (!nameItem.isMatches()) {
@@ -276,24 +276,6 @@ public class Parser {
         return ret;
     }
 
-    static class NameAndItem {
-        String name;
-        Item item;
-
-        public NameAndItem(String name, Item item) {
-            this.name = name;
-            this.item = item;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Item getItem() {
-            return item;
-        }
-    }
-
     static class KeyAndItem {
         Item key;
         Item item;
@@ -310,20 +292,6 @@ public class Parser {
         public Item getItem() {
             return item;
         }
-    }
-
-    private ParseResult<NameAndItem> nameItemPair2() {
-        // <name-item-pair> ::= TOKEN_ID TOKEN_COLON <item>
-        Token idToken = lexer.nextToken();
-        if (idToken.getTokenType() != TokenType.ID) {
-            lexer.pushBack(idToken);
-            return ParseResult.createNotMatch();
-        }
-        if (!lexer.popIfMatchesType(TokenType.COLON)) {
-            throw new SyntaxException("miss : after name");
-        }
-        Item item = item();
-        return ParseResult.createMatched(new NameAndItem((String)idToken.getValue(), item));
     }
 
     private ParseResult<KeyAndItem> keyItemPair() {
