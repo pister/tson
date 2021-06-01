@@ -80,7 +80,9 @@ public class Property {
      */
     public void setValue(final Object owner, final Object newValue) {
         if (!isWritable()) {
-            throw new UnsupportedOperationException("can not write the property: " + name);
+           // throw new UnsupportedOperationException("can not write the property: " + name);
+            // can not write, ignore it
+            return;
         }
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
