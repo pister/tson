@@ -311,6 +311,7 @@ public class TsonsTest extends TestCase {
         }
     }
 
+
     public void testEmpty() {
         FooObject eo = new FooObject();
         String s = Tsons.encode(eo);

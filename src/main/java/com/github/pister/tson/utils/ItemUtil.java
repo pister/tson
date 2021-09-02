@@ -67,6 +67,10 @@ public final class ItemUtil {
                 return arrayToItem(o, clonedParents);
             }
         }
+        if (o.getClass().isEnum()) {
+            // not support enum this version
+            throw new IllegalArgumentException("not support enum type: " + o);
+        }
         // plain object
         Map<String, Object> properties = objectVisitor.getFields(o);
         return mapToItem(properties, o.getClass().getName(), clonedParents);
