@@ -4,11 +4,13 @@
 <types-define> ::= TOKEN_MARK_TYPES TOKEN_PROPERTY_BEGIN <types-define-content> TOKEN_PROPERTY_END
 <types-define-content> ::= (TOKEN_VALUE_INT TOKEN_COLON <user-type-name>) (TOKEN_COMMA TOKEN_VALUE_INT TOKEN_COLON <user-type-name>)*
 
-<item> ::= <array-prefix>? <define-detail>
+<item> ::= <enum-detail> (<array-prefix>? <define-detail>)
 <define-detail> ::= <define-detail-content> | (<define-with-type> TOKEN_AT (<define-detail-content> | <value>))
 <define-with-type> ::= <type> | (TOKEN_MARK TOKEN_VALUE_INT)
 
 <array-prefix> ::= TOKEN_ARRAY_PREFIX TOKEN_VALUE_INT?
+
+<enum-detail> ::= TOKEN_ENUM_PREFIX TOKEN_VALUE_INT TOKEN_AT TOKEN_ID
 
 <define-detail> ::= (TOKEN_MARK TOKEN_VALUE_INT TOKEN_AT)? <define-detail-content>
 <define-detail-content> ::= <property-define-detail-content> | <list-define-detail-content>
@@ -35,6 +37,7 @@ TOKEN_COLON ::= ':'
 TOKEN_AT ::= '@'
 TOKEN_DOT ::= '.'
 TOKEN_MARK ::= '#'
+TOKEN_ENUM_PREFIX ::= '!'
 TOKEN_ARRAY_PREFIX ::= '+'
 TOKEN_TYPE_BOOL ::= 'bool'
 TOKEN_TYPE_INT8 ::= 'i8'
@@ -45,7 +48,7 @@ TOKEN_TYPE_FLOAT32 ::= 'f32'
 TOKEN_TYPE_FLOAT64 ::= 'f64'
 TOKEN_TYPE_CHAR ::= 'c'
 TOKEN_TYPE_STRING ::= 'str'
-TOKEN_TYPE_DATE  ::= 'date'
+TOKEN_TYPE_DATE ::= 'date'
 TOKEN_TYPE_BINARY ::= 'bin'
 TOKEN_MARK_TYPES ::= '#types'
 TOKEN_VALUE_INT ::= '-'? '0' | (['1'-'9']['0'-'9']*)

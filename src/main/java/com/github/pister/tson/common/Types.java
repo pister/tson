@@ -1,7 +1,5 @@
 package com.github.pister.tson.common;
 
-import com.github.pister.tson.models.Item;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

@@ -1,6 +1,7 @@
 package com.github.pister.tson;
 
 import com.github.pister.tson.objects.Contact;
+import com.github.pister.tson.objects.FooEnum;
 import com.github.pister.tson.objects.Person;
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -49,6 +50,13 @@ public class TsonsTest extends TestCase {
         Assert.assertEquals(a, a2);
     }
 
+    public void testEnum() {
+        String s = Tsons.encode(FooEnum.ValueOne);
+        System.out.println(s);
+        Object a2 = Tsons.decode(s);
+        Assert.assertEquals(FooEnum.ValueOne, a2);
+    }
+
     public void testArray1() {
         String[] a = new String[]{"hello", "world"};
         String s = Tsons.encode(a);
@@ -77,6 +85,7 @@ public class TsonsTest extends TestCase {
         map.put("doubleValue", 123.456);
         map.put("floatValue", 1.24f);
         map.put("dateValue", new Date());
+        map.put("myBool", true);
         List<Object> list = new ArrayList<Object>();
         list.add("hello");
         list.add(123);
@@ -253,6 +262,7 @@ public class TsonsTest extends TestCase {
         person.setMarried(true);
         person.setAddress(Arrays.asList("xx", "yy"));
         person.setMyMatrix(new int[2][3]);
+        person.setMyEnum(FooEnum.ValueTwo);
 
         person.setContacts(Arrays.asList(new Contact("Peter", "133"), new Contact("Tom", "134")));
         Map<String, Object> attrs = new HashMap<String, Object>();

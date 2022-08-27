@@ -20,6 +20,8 @@ public class Person {
 
     private long weight;
 
+    private FooEnum myEnum;
+
     private List<String> address;
 
     private List<Contact> contacts;
@@ -141,6 +143,14 @@ public class Person {
         this.transientValue = transientValue;
     }
 
+    public FooEnum getMyEnum() {
+        return myEnum;
+    }
+
+    public void setMyEnum(FooEnum myEnum) {
+        this.myEnum = myEnum;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -153,6 +163,7 @@ public class Person {
         if (weight != person.weight) return false;
         if (name != null ? !name.equals(person.name) : person.name != null) return false;
         if (birth != null ? !birth.equals(person.birth) : person.birth != null) return false;
+        if (myEnum != person.myEnum) return false;
         if (address != null ? !address.equals(person.address) : person.address != null) return false;
         if (contacts != null ? !contacts.equals(person.contacts) : person.contacts != null) return false;
         if (attrs != null ? !attrs.equals(person.attrs) : person.attrs != null) return false;
@@ -171,6 +182,7 @@ public class Person {
         result = 31 * result + (birth != null ? birth.hashCode() : 0);
         result = 31 * result + (married ? 1 : 0);
         result = 31 * result + (int) (weight ^ (weight >>> 32));
+        result = 31 * result + (myEnum != null ? myEnum.hashCode() : 0);
         result = 31 * result + (address != null ? address.hashCode() : 0);
         result = 31 * result + (contacts != null ? contacts.hashCode() : 0);
         result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
@@ -179,5 +191,25 @@ public class Person {
         result = 31 * result + Arrays.hashCode(attr2);
         result = 31 * result + Arrays.deepHashCode(myMatrix);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "age=" + age +
+                ", name='" + name + '\'' +
+                ", birth=" + birth +
+                ", married=" + married +
+                ", weight=" + weight +
+                ", myEnum=" + myEnum +
+                ", address=" + address +
+                ", contacts=" + contacts +
+                ", attrs=" + attrs +
+                ", mobiles=" + Arrays.toString(mobiles) +
+                ", attr1=" + Arrays.toString(attr1) +
+                ", attr2=" + Arrays.toString(attr2) +
+                ", myMatrix=" + Arrays.toString(myMatrix) +
+                ", transientValue='" + transientValue + '\'' +
+                '}';
     }
 }

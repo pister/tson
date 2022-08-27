@@ -46,6 +46,9 @@ public final class ItemUtil {
         if (o instanceof Date) {
             return new Item(ItemType.DATE, o);
         }
+        if (o.getClass().isEnum()) {
+            return new Item(ItemType.ENUM, o, ((Enum)o).getDeclaringClass().getName());
+        }
         if (o instanceof Map) {
             if (o instanceof HashMap) {
                 return mapToItem((Map) o, null, clonedParents);
@@ -67,10 +70,7 @@ public final class ItemUtil {
                 return arrayToItem(o, clonedParents);
             }
         }
-        if (o.getClass().isEnum()) {
-            // not support enum this version
-            throw new IllegalArgumentException("not support enum type: " + o);
-        }
+
         // plain object
         Map<String, Object> properties = objectVisitor.getFields(o);
         return mapToItem(properties, o.getClass().getName(), clonedParents);
@@ -84,6 +84,7 @@ public final class ItemUtil {
             case BOOL:
             case DATE:
             case STRING:
+            case ENUM:
                 return item.getValue();
             case CHAR:
                 return item.getValue().toString().charAt(0);

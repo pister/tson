@@ -2,6 +2,7 @@ package com.github.pister.tson.cases;
 
 import com.github.pister.tson.Tsons;
 import com.github.pister.tson.objects.Contact;
+import com.github.pister.tson.objects.FooEnum;
 import com.github.pister.tson.objects.Person;
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -137,6 +138,7 @@ public class TestCases extends TestCase {
             person.setBirth(new Date());
             person.setName("Jack" + i);
             person.setMarried(true);
+            person.setMyEnum(FooEnum.ValueTwo);
             person.setContacts(Arrays.asList(new Contact("name1", "133"), new Contact("name2", "134")));
             person.setWeight(80);
             person.setTransientValue("xxx");

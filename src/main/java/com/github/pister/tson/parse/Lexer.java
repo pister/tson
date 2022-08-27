@@ -86,6 +86,8 @@ public class Lexer {
                     return handleDot(c);
                 case '+':
                     return new Token(TokenType.ARRAY_PREFIX, (char) c);
+                case '!':
+                    return new Token(TokenType.ENUM_PREFIX, (char) c);
                 case '#':
                     return handleMark(c);
                 case '\"':

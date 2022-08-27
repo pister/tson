@@ -16,6 +16,7 @@ public enum TokenType {
     AT,         // @
     DOT,        // .
     MARK,       // #
+    ENUM_PREFIX,  // !
     ARRAY_PREFIX, // +
     KW_TYPE_BOOL, // bool
     KW_TYPE_INT8, // i8
@@ -27,6 +28,7 @@ public enum TokenType {
     KW_TYPE_CHAR,   // c
     KW_TYPE_STRING, // str
     KW_TYPE_DATE,   // date
+    KW_TYPE_ENUM,   // enum
     KW_TYPE_BINARY, // bin
     KW_MARK_TYPES,     // #types
     VALUE_INT,      // 1234

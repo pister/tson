@@ -69,6 +69,10 @@ public class ItemStringWriter {
                 String dateValue = dateFormatThreadLocal.get().format((Date)item.getValue());
                 writeString(item.getType().getTypeName(), dateValue);
                 break;
+            case ENUM:
+                Enum enumValue = (Enum)item.getValue();
+                writeEnum(item.getUserTypeName(), enumValue);
+                break;
             case LIST:
                 writeList(item);
                 break;
@@ -118,6 +122,14 @@ public class ItemStringWriter {
         stringBuilder.append(Constants.TOKEN_USER_TYPE_PREFIX);
         stringBuilder.append(index);
         stringBuilder.append(Constants.TYPE_VALUE_SEP);
+    }
+
+    private void writeEnum(String userTypeName, Enum enumValue) {
+        int index = findTypeIndex(userTypeName);
+        stringBuilder.append(Constants.TOKEN_ENUM_PREFIX);
+        stringBuilder.append(index);
+        stringBuilder.append(Constants.TYPE_VALUE_SEP);
+        stringBuilder.append(enumValue.name());
     }
 
 

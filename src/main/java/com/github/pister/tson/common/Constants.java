@@ -25,6 +25,8 @@ public interface Constants {
 
     String TOKEN_ARRAY_PREFIX = "+";
 
+    String TOKEN_ENUM_PREFIX = "!";
+
     String TYPES_NAME = "types";
 
     String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";

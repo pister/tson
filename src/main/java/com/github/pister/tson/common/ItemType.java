@@ -17,6 +17,7 @@ public enum ItemType {
     CHAR("c", Character.class),
     STRING("str", String.class),
     DATE("date", Date.class),
+    ENUM("", Enum.class),
     BINARY("bin", null),
     LIST("", null),
     MAP("", null),

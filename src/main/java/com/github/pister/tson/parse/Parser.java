@@ -1,6 +1,7 @@
 package com.github.pister.tson.parse;
 
 import com.github.pister.tson.common.Constants;
+import com.github.pister.tson.common.EnumUtil;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base629;
@@ -48,6 +49,10 @@ public class Parser {
 
     private Item item() {
         // <item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
+        ParseResult<Item> enumResult = enumDetail();
+        if (enumResult.isMatches()) {
+            return enumResult.getValue();
+        }
         boolean array = false;
         int dimensions = 0;
         ParseResult<Integer> arrayResult = arrayPrefix();
@@ -82,6 +87,46 @@ public class Parser {
         return item;
     }
 
+    private ParseResult<Item> enumDetail() {
+        // <enum-detail> ::= TOKEN_ENUM_PREFIX TOKEN_VALUE_INT TOKEN_AT TOKEN_ID
+        if (!lexer.popIfMatchesType(TokenType.ENUM_PREFIX)) {
+            return ParseResult.createNotMatch();
+        }
+        Token typeIndexToken = lexer.nextToken();
+        if (typeIndexToken.getTokenType() != TokenType.VALUE_INT) {
+            throw new SyntaxException("prefix '!' must follow an integer value for type index.");
+        }
+        if (!lexer.popIfMatchesType(TokenType.AT)) {
+            throw new SyntaxException("enum type define miss '@' char.");
+        }
+        Token idToken = lexer.nextToken();
+        if (idToken.getTokenType() != TokenType.ID) {
+            throw new SyntaxException("miss enum name define.");
+        }
+        int index = ((Number) typeIndexToken.getValue()).intValue();
+        String typeName = types.get(index);
+        if (typeName == null) {
+            throw new SyntaxException("can not find type for index:" + index);
+        }
+        Object enumValue = tryCastEnum(typeName, (String)idToken.getValue());
+        return ParseResult.createMatched(new Item(ItemType.ENUM, enumValue));
+    }
+
+    private Object tryCastEnum(String typeName, String name) {
+        try {
+            Class clazz = Class.forName(typeName);
+            if (!clazz.isEnum()) {
+                throw new RuntimeException("type '"+ typeName +"' is not an enum!");
+            }
+            return EnumUtil.getEnumInstance(clazz, name);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     private ParseResult<Integer> arrayPrefix() {
         // <array-prefix> ::= TOKEN_ARRAY_PREFIX TOKEN_VALUE_INT?
         if (!lexer.popIfMatchesType(TokenType.ARRAY_PREFIX)) {
@@ -92,7 +137,7 @@ public class Parser {
         if (token.getTokenType() != TokenType.VALUE_INT) {
             return ParseResult.createMatched(1);
         }
-        int dimensions = ((Number)token.getValue()).intValue();
+        int dimensions = ((Number) token.getValue()).intValue();
         if (dimensions <= 0) {
             throw new SyntaxException("dimensions must greater than 0");
         }
@@ -148,7 +193,7 @@ public class Parser {
 
 
     private void handleBinary(Item item) {
-        String s = (String)item.getValue();
+        String s = (String) item.getValue();
         if (StringUtil.isEmpty(s)) {
             item.setValue(null);
             return;
@@ -191,7 +236,7 @@ public class Parser {
             if (indexToken.getTokenType() != TokenType.VALUE_INT) {
                 throw new SyntaxException("need an index after #");
             }
-            int index = ((Number)indexToken.getValue()).intValue();
+            int index = ((Number) indexToken.getValue()).intValue();
             String userName = types.get(index);
             return ParseResult.createMatched(new DefinedType(null, userName));
         }
@@ -263,7 +308,7 @@ public class Parser {
             return ret;
         }
         ret.put(nameItem.getValue().getKey(), nameItem.getValue().getItem());
-        for (;;) {
+        for (; ; ) {
             if (!lexer.popIfMatchesType(TokenType.COMMA)) {
                 break;
             }
@@ -356,7 +401,7 @@ public class Parser {
         }
         Item item = item();
         items.add(item);
-        for (;;) {
+        for (; ; ) {
             if (!lexer.popIfMatchesType(TokenType.COMMA)) {
                 break;
             }
@@ -408,6 +453,8 @@ public class Parser {
                 return ParseResult.createMatched(ItemType.STRING);
             case KW_TYPE_DATE:
                 return ParseResult.createMatched(ItemType.DATE);
+            case KW_TYPE_ENUM:
+                return ParseResult.createMatched(ItemType.ENUM);
             case KW_TYPE_BINARY:
                 return ParseResult.createMatched(ItemType.BINARY);
             default:
@@ -438,7 +485,7 @@ public class Parser {
             throw new SyntaxException("need an int value, but:" + token.getValue());
         }
         lexer.nextToken(); // pop int value
-        int index = ((Number)token.getValue()).intValue();
+        int index = ((Number) token.getValue()).intValue();
         if (!lexer.popIfMatchesType(TokenType.COLON)) {
             throw new SyntaxException("need an ':', but: " + token.getValue());
         }
@@ -450,7 +497,7 @@ public class Parser {
         // <types-define-content> ::= (TOKEN_VALUE_INT TOKEN_COLON <user-type-name>) (TOKEN_COMMA TOKEN_VALUE_INT TOKEN_COLON <user-type-name>)*
         Map<Integer, String> types = new HashMap<Integer, String>();
         handleIndexAndName(types);
-        for (;;) {
+        for (; ; ) {
             if (!lexer.popIfMatchesType(TokenType.COMMA)) {
                 break;
             }
@@ -467,7 +514,7 @@ public class Parser {
             throw new SyntaxException("need an identifier, but:" + token.getValue());
         }
         stringBuilder.append(lexer.nextToken().getValue());
-        for (;;) {
+        for (; ; ) {
             if (!lexer.popIfMatchesType(TokenType.DOT)) {
                 break;
             }
