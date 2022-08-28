@@ -4,7 +4,6 @@ import com.github.pister.tson.Tsons;
 import com.github.pister.tson.objects.Contact;
 import com.github.pister.tson.objects.FooEnum;
 import com.github.pister.tson.objects.Person;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.io.UnsupportedEncodingException;
@@ -30,12 +29,12 @@ public class TestCases extends TestCase {
         params.put("date_v", new Date());
         String s = Tsons.encode(params);
         Map<String, Object> paramsDecoded = (Map<String, Object>) Tsons.decode(s);
-        Assert.assertEquals(params.size(), paramsDecoded.size());
+        assertEquals(params.size(), paramsDecoded.size());
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             String key = entry.getKey();
             Object v1 = entry.getValue();
             Object v2 = paramsDecoded.get(key);
-            Assert.assertEquals(v1, v2);
+            assertEquals(v1, v2);
         }
     }
 
@@ -43,9 +42,9 @@ public class TestCases extends TestCase {
         int[] intArray = new int[]{1, 2, 3, 4};
         String s = Tsons.encode(intArray);
         int[] intArray2 = (int[])Tsons.decode(s);
-        Assert.assertEquals(intArray.length, intArray2.length);
+        assertEquals(intArray.length, intArray2.length);
         for (int i = 0; i < intArray.length; i++) {
-            Assert.assertEquals(intArray[i], intArray2[i]);
+            assertEquals(intArray[i], intArray2[i]);
         }
     }
 
@@ -53,9 +52,9 @@ public class TestCases extends TestCase {
         byte[] buf = "hello world\u0001\u0001".getBytes("utf-8");
         String s = Tsons.encode(buf);
         byte[] buf2 = (byte[])Tsons.decode(s);
-        Assert.assertEquals(buf.length, buf2.length);
+        assertEquals(buf.length, buf2.length);
         for (int i = 0; i < buf.length; i++) {
-            Assert.assertEquals(buf[i], buf2[i]);
+            assertEquals(buf[i], buf2[i]);
         }
     }
 
@@ -63,9 +62,9 @@ public class TestCases extends TestCase {
         float[] arr1 = new float[]{1.1f, 2.2f, 3.3f, 4.4f};
         String s = Tsons.encode(arr1);
         float[] arr2 = (float[])Tsons.decode(s);
-        Assert.assertEquals(arr1.length, arr2.length);
+        assertEquals(arr1.length, arr2.length);
         for (int i = 0; i < arr1.length; i++) {
-            Assert.assertTrue(floatEquals(arr1[i], arr2[i]));
+            assertTrue(floatEquals(arr1[i], arr2[i]));
         }
     }
 
@@ -73,9 +72,9 @@ public class TestCases extends TestCase {
         double[] arr1 = new double[]{1.12, 2.22, 3.32, 4.42};
         String s = Tsons.encode(arr1);
         double[] arr2 = (double[])Tsons.decode(s);
-        Assert.assertEquals(arr1.length, arr2.length);
+        assertEquals(arr1.length, arr2.length);
         for (int i = 0; i < arr1.length; i++) {
-            Assert.assertTrue(doubleEquals(arr1[i], arr2[i]));
+            assertTrue(doubleEquals(arr1[i], arr2[i]));
         }
     }
 
@@ -83,9 +82,9 @@ public class TestCases extends TestCase {
         String[] arr1 = new String[]{"aa", "bb", "vccccc"};
         String s = Tsons.encode(arr1);
         String[] arr2 = (String[])Tsons.decode(s);
-        Assert.assertEquals(arr1.length, arr2.length);
+        assertEquals(arr1.length, arr2.length);
         for (int i = 0; i < arr1.length; i++) {
-            Assert.assertEquals(arr1[i], arr2[i]);
+            assertEquals(arr1[i], arr2[i]);
         }
     }
 
@@ -105,9 +104,9 @@ public class TestCases extends TestCase {
         String s = Tsons.encode(mixList);
         System.out.println(s);
         List<Object> list2 = (List<Object>)Tsons.decode(s);
-        Assert.assertEquals(mixList.size(), list2.size());
+        assertEquals(mixList.size(), list2.size());
         for (int i = 0, size = mixList.size(); i < size; i++) {
-            Assert.assertEquals(mixList.get(i), list2.get(i));
+            assertEquals(mixList.get(i), list2.get(i));
         }
     }
 
@@ -120,12 +119,12 @@ public class TestCases extends TestCase {
         }
         String s = Tsons.encode(myMatrix);
         int[][] myMatrix2 = (int[][])Tsons.decode(s);
-        Assert.assertNotNull(myMatrix2);
-        Assert.assertEquals(myMatrix2.length, myMatrix.length);
+        assertNotNull(myMatrix2);
+        assertEquals(myMatrix2.length, myMatrix.length);
         for (int i = 0; i < myMatrix.length; i++) {
-            Assert.assertEquals(myMatrix2[i].length, myMatrix[i].length);
+            assertEquals(myMatrix2[i].length, myMatrix[i].length);
             for (int j = 0; j < myMatrix[i].length; j++) {
-                Assert.assertEquals(myMatrix[i][j], myMatrix2[i][j]);
+                assertEquals(myMatrix[i][j], myMatrix2[i][j]);
             }
         }
     }
@@ -146,10 +145,10 @@ public class TestCases extends TestCase {
         }
         String s = Tsons.encode(personList);
         List<Person> personList2 = (List<Person>)Tsons.decode(s);
-        Assert.assertNotNull(personList2);
-        Assert.assertEquals(personList.size(), personList2.size());
+        assertNotNull(personList2);
+        assertEquals(personList.size(), personList2.size());
         for (int i = 0, size = personList.size(); i < size; i++) {
-            Assert.assertEquals(personList.get(i), personList2.get(i));
+            assertEquals(personList.get(i), personList2.get(i));
         }
     }
 

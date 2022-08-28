@@ -3,7 +3,6 @@ package com.github.pister.tson.parse;
 import com.github.pister.tson.Tsons;
 import com.github.pister.tson.objects.Contact;
 import com.github.pister.tson.objects.Person;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
@@ -38,7 +37,7 @@ public class ParserTest extends TestCase {
         String s = Tsons.encode(person);
 
         Object object = Tsons.decode(s);
-        Assert.assertTrue(person.equals(object));
+        assertTrue(person.equals(object));
     }
 
 }

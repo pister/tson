@@ -3,7 +3,6 @@ package com.github.pister.tson;
 import com.github.pister.tson.objects.Contact;
 import com.github.pister.tson.objects.FooEnum;
 import com.github.pister.tson.objects.Person;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.util.*;
@@ -17,7 +16,7 @@ public class TsonsTest extends TestCase {
         String a = "abc\nxksad\"xx中午";
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testLinkedList() {
@@ -27,7 +26,7 @@ public class TsonsTest extends TestCase {
         a.add("cc");
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testList() {
@@ -37,7 +36,7 @@ public class TsonsTest extends TestCase {
         a.add("cc");
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testSet() {
@@ -47,14 +46,14 @@ public class TsonsTest extends TestCase {
         a.add("cc");
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testEnum() {
         String s = Tsons.encode(FooEnum.ValueOne);
         System.out.println(s);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(FooEnum.ValueOne, a2);
+        assertEquals(FooEnum.ValueOne, a2);
     }
 
     public void testArray1() {
@@ -62,9 +61,9 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
         String[] b = (String[]) a2;
-        Assert.assertEquals(a.length, b.length);
+        assertEquals(a.length, b.length);
         for (int i = 0; i < a.length; i++) {
-            Assert.assertEquals(a[i], b[i]);
+            assertEquals(a[i], b[i]);
         }
     }
 
@@ -73,9 +72,9 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
         int[] b = (int[]) a2;
-        Assert.assertEquals(a.length, b.length);
+        assertEquals(a.length, b.length);
         for (int i = 0; i < a.length; i++) {
-            Assert.assertEquals(a[i], b[i]);
+            assertEquals(a[i], b[i]);
         }
     }
 
@@ -95,7 +94,7 @@ public class TsonsTest extends TestCase {
         // {dateValue:date@"2020-01-08 17:46:12.908",intValue:i32@123,myList:[str@"hello",i32@123,bool@true],floatValue:f32@1.24,doubleValue:f64@123.456}
         System.out.println(s);
         Object map2 = Tsons.decode(s);
-        Assert.assertEquals(map, map2);
+        assertEquals(map, map2);
     }
 
     public void testArray3d() {
@@ -110,19 +109,19 @@ public class TsonsTest extends TestCase {
         String s1 = Tsons.encode(array3d);
         Object o2 = Tsons.decode(s1);
         int[][][] array3d2 = (int[][][]) o2;
-        Assert.assertEquals(array3d.length, array3d2.length);
+        assertEquals(array3d.length, array3d2.length);
         for (int i = 0; i < array3d.length; i++) {
             int[][] a1 = array3d[i];
             int[][] a2 = array3d2[i];
-            Assert.assertEquals(a1.length, a2.length);
+            assertEquals(a1.length, a2.length);
             for (int j = 0; j < a1.length; j++) {
                 int[] a11 = a1[j];
                 int[] a21 = a2[j];
-                Assert.assertEquals(a11.length, a21.length);
+                assertEquals(a11.length, a21.length);
                 for (int k = 0; k < a11.length; k++) {
                     int a111 = a11[k];
                     int a211 = a21[k];
-                    Assert.assertEquals(a111, a211);
+                    assertEquals(a111, a211);
                 }
             }
         }
@@ -138,9 +137,9 @@ public class TsonsTest extends TestCase {
             b.add(a);
             a.add(b);
             Tsons.encode(a);
-            Assert.fail("must not reach here");
+            fail("must not reach here");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains("cycle reference"));
+            assertTrue(e.getMessage().contains("cycle reference"));
         }
 
         try {
@@ -150,9 +149,9 @@ public class TsonsTest extends TestCase {
             a.put("ab", b);
             b.put("a", a);
             Tsons.encode(a);
-            Assert.fail("must not reach here");
+            fail("must not reach here");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains("cycle reference"));
+            assertTrue(e.getMessage().contains("cycle reference"));
         }
 
         try {
@@ -163,9 +162,9 @@ public class TsonsTest extends TestCase {
             a2.a = a3;
             a3.a = a1;
             Tsons.encode(a1);
-            Assert.fail("must not reach here");
+            fail("must not reach here");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains("cycle reference"));
+            assertTrue(e.getMessage().contains("cycle reference"));
         }
     }
 
@@ -193,42 +192,42 @@ public class TsonsTest extends TestCase {
         a.add(params);
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testInt() {
         int a = -123;
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testBoolean() {
         boolean a = true;
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testLong() {
         long a = 123L;
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testFloat() {
         float a = 123.456f;
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testDouble() {
         double a = 123.456;
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertEquals(a, a2);
+        assertEquals(a, a2);
     }
 
     public void testVerySmallOrBigDouble() {
@@ -236,13 +235,13 @@ public class TsonsTest extends TestCase {
         {
             String s = Tsons.encode(smallNumber);
             Object a2 = Tsons.decode(s);
-            Assert.assertEquals(smallNumber, a2);
+            assertEquals(smallNumber, a2);
         }
         double bigNumber = 3.20e13;
         {
             String s = Tsons.encode(bigNumber);
             Object a2 = Tsons.decode(s);
-            Assert.assertEquals(bigNumber, a2);
+            assertEquals(bigNumber, a2);
         }
     }
 
@@ -251,7 +250,7 @@ public class TsonsTest extends TestCase {
         byte[] a = new byte[]{'h', 'e', 'l', 'l', 'o'};
         String s = Tsons.encode(a);
         Object a2 = Tsons.decode(s);
-        Assert.assertTrue(Arrays.equals(a, (byte[]) a2));
+        assertTrue(Arrays.equals(a, (byte[]) a2));
     }
 
     public void testObjects() {
@@ -278,7 +277,7 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(person);
         System.out.println(s);
         Person person2 = (Person) Tsons.decode(s);
-        Assert.assertTrue(person.equals(person2));
+        assertTrue(person.equals(person2));
     }
 
     public static class FooObject {
@@ -327,7 +326,7 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(eo);
         System.out.println(s);
         FooObject e = (FooObject) Tsons.decode(s);
-        Assert.assertTrue(e.equals(eo));
+        assertTrue(e.equals(eo));
     }
 
     public void testObjectKeyMap() {
@@ -347,7 +346,7 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(m);
         System.out.println(s);
         Object e = Tsons.decode(s);
-        Assert.assertTrue(e.equals(m));
+        assertTrue(e.equals(m));
     }
 
     public void testIntegerKeyMap() {
@@ -357,7 +356,7 @@ public class TsonsTest extends TestCase {
         String s = Tsons.encode(m);
         System.out.println(s);
         Object e = Tsons.decode(s);
-        Assert.assertTrue(e.equals(m));
+        assertTrue(e.equals(m));
     }
 
     public void testKeyForOldVersionMap() {
@@ -365,7 +364,7 @@ public class TsonsTest extends TestCase {
         m.put("a12", "abc");
         String s = "{a12:str@\"abc\"}";
         Object e = Tsons.decode(s);
-        Assert.assertTrue(e.equals(m));
+        assertTrue(e.equals(m));
     }
 
 }
