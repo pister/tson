@@ -27,6 +27,7 @@ public class TestCases extends TestCase {
         params.put("str_v", "hello世界");
         params.put("empty_str", "");
         params.put("date_v", new Date());
+        params.put("enum_v", FooEnum.ValueTwo);
         String s = Tsons.encode(params);
         Map<String, Object> paramsDecoded = (Map<String, Object>) Tsons.decode(s);
         assertEquals(params.size(), paramsDecoded.size());
