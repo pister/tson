@@ -5,24 +5,20 @@ import com.github.pister.tson.common.EnumUtil;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base629;
+import com.github.pister.tson.utils.DateTimeUtil;
 import com.github.pister.tson.utils.StringUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
  * Created by songlihuang on 2020/1/7.
  */
 public class Parser {
-
-    private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat(Constants.DATE_FORMAT);
-        }
-    };
-
 
     private Lexer lexer;
 
@@ -108,7 +104,7 @@ public class Parser {
         if (typeName == null) {
             throw new SyntaxException("can not find type for index:" + index);
         }
-        Object enumValue = tryCastEnum(typeName, (String)idToken.getValue());
+        Object enumValue = tryCastEnum(typeName, (String) idToken.getValue());
         return ParseResult.createMatched(new Item(ItemType.ENUM, enumValue));
     }
 
@@ -116,7 +112,7 @@ public class Parser {
         try {
             Class clazz = Class.forName(typeName);
             if (!clazz.isEnum()) {
-                throw new RuntimeException("type '"+ typeName +"' is not an enum!");
+                throw new RuntimeException("type '" + typeName + "' is not an enum!");
             }
             return EnumUtil.getEnumInstance(clazz, name);
         } catch (ClassNotFoundException e) {
@@ -212,12 +208,20 @@ public class Parser {
     private void castDataForType(Item item) {
         switch (item.getType()) {
             case DATE:
-                try {
-                    Date date = dateFormatThreadLocal.get().parse((String) item.getValue());
-                    item.setValue(date);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
+                Date date = DateTimeUtil.parseForDate((String) item.getValue());
+                item.setValue(date);
+                break;
+            case LOCAL_DATE_TIME:
+                LocalDateTime localDateTime = DateTimeUtil.parseDateTime((String) item.getValue());
+                item.setValue(localDateTime);
+                break;
+            case LOCAL_DATE:
+                LocalDate localDate = DateTimeUtil.parseDate((String) item.getValue());
+                item.setValue(localDate);
+                break;
+            case LOCAL_TIME:
+                LocalTime localTime = DateTimeUtil.parseTime((String) item.getValue());
+                item.setValue(localTime);
                 break;
             case BINARY:
                 handleBinary(item);
@@ -453,6 +457,12 @@ public class Parser {
                 return ParseResult.createMatched(ItemType.STRING);
             case KW_TYPE_DATE:
                 return ParseResult.createMatched(ItemType.DATE);
+            case KW_TYPE_LOCAL_DATE_TIME:
+                return ParseResult.createMatched(ItemType.LOCAL_DATE_TIME);
+            case KW_TYPE_LOCAL_DATE:
+                return ParseResult.createMatched(ItemType.LOCAL_DATE);
+            case KW_TYPE_LOCAL_TIME:
+                return ParseResult.createMatched(ItemType.LOCAL_TIME);
             case KW_TYPE_ENUM:
                 return ParseResult.createMatched(ItemType.ENUM);
             case KW_TYPE_BINARY:

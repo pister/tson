@@ -1,5 +1,8 @@
 package com.github.pister.tson.common;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +47,9 @@ public final class Types {
         class2ItemTypes.put(String.class, ItemType.STRING);
         class2ItemTypes.put(Boolean.class, ItemType.BOOL);
         class2ItemTypes.put(Date.class, ItemType.DATE);
-        class2ItemTypes.put(String.class, ItemType.STRING);
+        class2ItemTypes.put(LocalDateTime.class, ItemType.LOCAL_DATE_TIME);
+        class2ItemTypes.put(LocalDate.class, ItemType.LOCAL_DATE);
+        class2ItemTypes.put(LocalTime.class, ItemType.LOCAL_TIME);
 
         arrayComponentType2ItemTypes.put(Byte.TYPE, ItemType.INT8);
         arrayComponentType2ItemTypes.put(Short.TYPE, ItemType.INT16);
@@ -56,7 +61,9 @@ public final class Types {
         arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
         arrayComponentType2ItemTypes.put(Boolean.class, ItemType.BOOL);
         arrayComponentType2ItemTypes.put(Date.class, ItemType.DATE);
-        arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
+        arrayComponentType2ItemTypes.put(LocalDateTime.class, ItemType.LOCAL_DATE_TIME);
+        arrayComponentType2ItemTypes.put(LocalDate.class, ItemType.LOCAL_DATE);
+        arrayComponentType2ItemTypes.put(LocalTime.class, ItemType.LOCAL_TIME);
     }
 
 
@@ -68,28 +75,4 @@ public final class Types {
         return arrayComponentType2ItemTypes.get(clazz);
     }
 
-    public static ItemType classToItemType(Class<?> clazz) {
-        ItemType itemType = class2ItemTypes.get(clazz);
-        if (itemType != null) {
-            return itemType;
-        }
-        if (Date.class.isAssignableFrom(clazz)) {
-            return ItemType.DATE;
-        }
-        if (List.class.isAssignableFrom(clazz)) {
-            return ItemType.LIST;
-        }
-        if (Map.class.isAssignableFrom(clazz)) {
-            return ItemType.MAP;
-        }
-        return null;
-    }
-
-    public static String getUserItemTypeName(Class<?> clazz) {
-        ItemType itemType = class2ItemTypes.get(clazz);
-        if (itemType != null) {
-            return itemType.getTypeName();
-        }
-        return clazz.getCanonicalName();
-    }
 }

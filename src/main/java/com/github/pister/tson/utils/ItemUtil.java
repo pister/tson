@@ -8,6 +8,9 @@ import com.github.pister.tson.models.Item;
 import com.github.pister.tson.parse.Parser;
 
 import java.lang.reflect.Array;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -46,6 +49,16 @@ public final class ItemUtil {
         if (o instanceof Date) {
             return new Item(ItemType.DATE, o);
         }
+        if (o instanceof LocalDateTime) {
+            return new Item(ItemType.LOCAL_DATE_TIME, o);
+        }
+        if (o instanceof LocalDate) {
+            return new Item(ItemType.LOCAL_DATE, o);
+        }
+        if (o instanceof LocalTime) {
+            return new Item(ItemType.LOCAL_TIME, o);
+        }
+        // todo add localDate, localTime
         if (o.getClass().isEnum()) {
             return new Item(ItemType.ENUM, o, ((Enum)o).getDeclaringClass().getName());
         }
@@ -83,6 +96,9 @@ public final class ItemUtil {
         switch (item.getType()) {
             case BOOL:
             case DATE:
+            case LOCAL_DATE_TIME:
+            case LOCAL_DATE:
+            case LOCAL_TIME:
             case STRING:
             case ENUM:
                 return item.getValue();

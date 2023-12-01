@@ -21,9 +21,13 @@ public class KeyWords {
         name2keywords.put("c",  TokenType.KW_TYPE_CHAR);
         name2keywords.put("str", TokenType.KW_TYPE_STRING);
         name2keywords.put("date", TokenType.KW_TYPE_DATE);
+        name2keywords.put("ldt", TokenType.KW_TYPE_LOCAL_DATE_TIME);
+        name2keywords.put("ld", TokenType.KW_TYPE_LOCAL_DATE);
+        name2keywords.put("lt", TokenType.KW_TYPE_LOCAL_TIME);
         name2keywords.put("bin", TokenType.KW_TYPE_BINARY);
         name2keywords.put("true", TokenType.VALUE_TRUE);
         name2keywords.put("false", TokenType.VALUE_FALSE);
+
     }
 
     public static TokenType getTokenTypeByName(String name) {

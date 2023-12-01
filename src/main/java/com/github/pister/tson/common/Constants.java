@@ -29,8 +29,6 @@ public interface Constants {
 
     String TYPES_NAME = "types";
 
-    String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-
     char BINARY_VERSION_BASE33 = '1';
 
     Charset DEFAULT_CHARSET = Charset.forName("utf-8");

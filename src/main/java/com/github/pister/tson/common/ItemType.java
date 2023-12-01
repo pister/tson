@@ -1,5 +1,8 @@
 package com.github.pister.tson.common;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -17,6 +20,9 @@ public enum ItemType {
     CHAR("c", Character.class),
     STRING("str", String.class),
     DATE("date", Date.class),
+    LOCAL_DATE_TIME("ldt", LocalDateTime.class),
+    LOCAL_DATE("ld", LocalDate.class),
+    LOCAL_TIME("lt", LocalTime.class),
     ENUM("", Enum.class),
     BINARY("bin", null),
     LIST("", null),

@@ -3,15 +3,15 @@ package com.github.pister.tson.io;
 import com.github.pister.tson.common.Constants;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base629;
+import com.github.pister.tson.utils.DateTimeUtil;
 import com.github.pister.tson.utils.StringUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
 
 
 /**
@@ -21,13 +21,6 @@ public class ItemStringWriter {
 
 
     private boolean ignoreNullValue = true;
-
-    private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat(Constants.DATE_FORMAT);
-        }
-    };
 
     private int indexSeq = 0;
 
@@ -66,8 +59,17 @@ public class ItemStringWriter {
                 writeString(item.getType().getTypeName(), (String)item.getValue());
                 break;
             case DATE:
-                String dateValue = dateFormatThreadLocal.get().format((Date)item.getValue());
+                String dateValue = DateTimeUtil.format((Date)item.getValue());
                 writeString(item.getType().getTypeName(), dateValue);
+                break;
+            case LOCAL_DATE_TIME:
+                writeString(item.getType().getTypeName(), DateTimeUtil.format((LocalDateTime)item.getValue(), DateTimeUtil.LOCAL_DATE_TIME_FORMAT));
+                break;
+            case LOCAL_DATE:
+                writeString(item.getType().getTypeName(), DateTimeUtil.format((LocalDate)item.getValue(), DateTimeUtil.LOCAL_DATE_FORMAT));
+                break;
+            case LOCAL_TIME:
+                writeString(item.getType().getTypeName(), DateTimeUtil.format((LocalTime)item.getValue(), DateTimeUtil.LOCAL_TIME_FORMAT));
                 break;
             case ENUM:
                 Enum enumValue = (Enum)item.getValue();

@@ -7,6 +7,9 @@ import com.github.pister.tson.objects.Person;
 import junit.framework.TestCase;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -28,7 +31,29 @@ public class TestCases extends TestCase {
         params.put("empty_str", "");
         params.put("date_v", new Date());
         params.put("enum_v", FooEnum.ValueTwo);
+        params.put("local_datetime", LocalDateTime.now());
+        params.put("local_date", LocalDate.now());
+        params.put("local_time", LocalTime.now());
         String s = Tsons.encode(params);
+        Map<String, Object> paramsDecoded = (Map<String, Object>) Tsons.decode(s);
+        assertEquals(params.size(), paramsDecoded.size());
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String key = entry.getKey();
+            Object v1 = entry.getValue();
+            Object v2 = paramsDecoded.get(key);
+            assertEquals(v1, v2);
+        }
+    }
+
+    public void testLocalTimes() {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("date", new Date());
+        params.put("local_datetime", LocalDateTime.now());
+        params.put("local_date", LocalDate.now());
+        params.put("local_time", LocalTime.now());
+
+        String s = Tsons.encode(params);
+        System.out.println(s);
         Map<String, Object> paramsDecoded = (Map<String, Object>) Tsons.decode(s);
         assertEquals(params.size(), paramsDecoded.size());
         for (Map.Entry<String, Object> entry : params.entrySet()) {

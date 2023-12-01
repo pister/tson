@@ -28,6 +28,9 @@ public enum TokenType {
     KW_TYPE_CHAR,   // c
     KW_TYPE_STRING, // str
     KW_TYPE_DATE,   // date
+    KW_TYPE_LOCAL_DATE_TIME,   // ldt
+    KW_TYPE_LOCAL_DATE,   // ld
+    KW_TYPE_LOCAL_TIME,   // lt
     KW_TYPE_ENUM,   // enum
     KW_TYPE_BINARY, // bin
     KW_MARK_TYPES,     // #types
