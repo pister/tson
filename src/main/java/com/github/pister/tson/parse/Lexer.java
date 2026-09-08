@@ -148,7 +148,10 @@ public class Lexer {
             for (; ; ) {
                 c = lexerReader.nextChar();
                 if (c < 0) {
-                    break;
+                    // 走到输入末尾还没遇到闭合引号，说明文本被截断或者本身就是坏的。
+                    // 这里原来是 break，会把读到一半的内容当成完整字符串返回，
+                    // 于是损坏的数据看起来和正常数据一样 —— 持久化场景宁可报错。
+                    throw new SyntaxException("unterminated string, read " + builder.length() + " chars before end of input");
                 }
                 if (c == '\"') {
                     break;
@@ -156,7 +159,7 @@ public class Lexer {
                 if (c == '\\') {
                     int nextC = lexerReader.nextChar();
                     if (nextC < 0) {
-                        break;
+                        throw new SyntaxException("unterminated string, input ends with a dangling escape after " + builder.length() + " chars");
                     }
                     switch (nextC) {
                         case 'n':

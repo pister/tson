@@ -195,8 +195,34 @@ public class ItemStringWriter {
         stringBuilder.append(name);
         stringBuilder.append(Constants.TYPE_VALUE_SEP);
         stringBuilder.append("\"");
-        stringBuilder.append(value.replace("\"", "\\\""));
+        escapeTo(stringBuilder, value);
         stringBuilder.append("\"");
+    }
+
+    /**
+     * 把字符串值写进引号里，反斜杠和双引号都要转义。
+     *
+     * <p>只转义双引号是不够的：Lexer 读到反斜杠就会把它当转义引导符，
+     * \n \r \t \b \\ \" \' 按转义序列还原，其余 \X 直接丢掉反斜杠。
+     * 所以值里任何一个裸反斜杠都会让解码结果和原值不一致；
+     * 若它正好落在末尾，还会把闭合引号一并吃掉，导致整份文档解析失败。</p>
+     *
+     * <p>必须单次遍历，不能写成两次 replace 串联：先转义出来的反斜杠会被第二次再转义一遍。</p>
+     */
+    private static void escapeTo(StringBuilder out, String value) {
+        for (int i = 0, len = value.length(); i < len; i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '\\':
+                    out.append('\\').append('\\');
+                    break;
+                case '"':
+                    out.append('\\').append('"');
+                    break;
+                default:
+                    out.append(c);
+            }
+        }
     }
 
     private void writeDirect(Item item) {
