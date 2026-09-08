@@ -8,6 +8,8 @@ import com.github.pister.tson.models.Item;
 import com.github.pister.tson.parse.Parser;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,7 +35,6 @@ public final class ItemUtil {
             return null;
         }
         checkCycleReference(o, parents);
-        List<Object> clonedParents = copyList(parents, o);
         if (o instanceof String) {
             return new Item(ItemType.STRING, o);
         }
@@ -62,18 +63,21 @@ public final class ItemUtil {
         if (o.getClass().isEnum()) {
             return new Item(ItemType.ENUM, o, ((Enum)o).getDeclaringClass().getName());
         }
+        // 只有容器才需要往下传父节点链，标量在上面已经返回了，
+        // 放在这里可以省掉每个叶子节点一次 ArrayList 的新建和丢弃
+        List<Object> clonedParents = copyList(parents, o);
         if (o instanceof Map) {
             if (o instanceof HashMap) {
                 return mapToItem((Map) o, null, clonedParents);
             } else {
-                return mapToItem((Map) o, o.getClass().getCanonicalName(), clonedParents);
+                return mapToItem((Map) o, userTypeNameOf(o.getClass()), clonedParents);
             }
         }
         if (o instanceof Iterable) {
             if (o instanceof ArrayList) {
                 return iterableToItem((Iterable) o, null, clonedParents);
             } else {
-                return iterableToItem((Iterable) o, o.getClass().getCanonicalName(), clonedParents);
+                return iterableToItem((Iterable) o, userTypeNameOf(o.getClass()), clonedParents);
             }
         }
         if (o.getClass().isArray()) {
@@ -127,14 +131,40 @@ public final class ItemUtil {
         }
     }
 
+    /**
+     * 集合类型写进类型表时用的名字，无法还原的类型返回 null 表示退回默认集合。
+     *
+     * <p>用 {@link Class#getName()} 而不是 getCanonicalName()：后者把内部类的 $ 写成 .，
+     * 得到的名字 Class.forName 根本加载不了（java.util.Arrays.ArrayList 就是这么来的）。</p>
+     *
+     * <p>另一方面，Arrays.asList、Collections.unmodifiableXxx 返回的都是私有内部类，
+     * 名字写对了解码时也 newInstance 不出来。与其写一个还原不了的名字，
+     * 不如不写，让解码端直接用默认的 ArrayList / HashMap —— 这也正是它们今天的实际效果。</p>
+     */
+    private static String userTypeNameOf(Class<?> clazz) {
+        if (!Modifier.isPublic(clazz.getModifiers())) {
+            return null;
+        }
+        try {
+            Constructor<?> constructor = clazz.getConstructor();
+            if (!Modifier.isPublic(constructor.getModifiers())) {
+                return null;
+            }
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+        return clazz.getName();
+    }
+
     private static Class<?> getUserClass(Item item) {
-        // use java.util.Arrays.ArrayList treat as default List
+        // 老版本用 getCanonicalName() 写类型名，Arrays.asList 会写成这个加载不了的名字，
+        // 存量数据里还有，必须继续认。新数据由 userTypeNameOf 保证不会再写出这种名字。
         if ("java.util.Arrays.ArrayList".equals(item.getUserTypeName())) {
             return null;
         }
         if (!StringUtil.isEmpty(item.getUserTypeName())) {
             try {
-                return Class.forName(item.getUserTypeName());
+                return ClassUtil.forName(item.getUserTypeName());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -200,7 +230,7 @@ public final class ItemUtil {
             Class<?> clazz;
             if (!StringUtil.isEmpty(item.getArrayComponentUserTypeName())) {
                 try {
-                    clazz = Class.forName(item.getArrayComponentUserTypeName());
+                    clazz = ClassUtil.forName(item.getArrayComponentUserTypeName());
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }

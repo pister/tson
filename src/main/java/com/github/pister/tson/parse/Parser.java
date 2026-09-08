@@ -5,6 +5,7 @@ import com.github.pister.tson.common.EnumUtil;
 import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base629;
+import com.github.pister.tson.utils.ClassUtil;
 import com.github.pister.tson.utils.DateTimeUtil;
 import com.github.pister.tson.utils.StringUtil;
 
@@ -110,7 +111,7 @@ public class Parser {
 
     private Object tryCastEnum(String typeName, String name) {
         try {
-            Class clazz = Class.forName(typeName);
+            Class clazz = ClassUtil.forName(typeName);
             if (!clazz.isEnum()) {
                 throw new RuntimeException("type '" + typeName + "' is not an enum!");
             }
