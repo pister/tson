@@ -275,7 +275,9 @@ public final class ItemUtil {
     private static Object toMapObject(Item item) {
         Map<Object, Item> srcMap = (Map<Object, Item>) item.getValue();
 
-        Map<Object, Object> destMap = new HashMap<Object, Object>();
+        // 同样用 LinkedHashMap 保持顺序。LinkedHashMap 也是 HashMap，
+        // 没有类型名时直接把它返回给调用方，instanceof / 强转都不受影响
+        Map<Object, Object> destMap = new LinkedHashMap<Object, Object>();
         for (Map.Entry<Object, Item> entry : srcMap.entrySet()) {
             Object key = entry.getKey();
             if (key instanceof Item) {

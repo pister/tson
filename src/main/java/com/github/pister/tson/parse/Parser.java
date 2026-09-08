@@ -304,7 +304,9 @@ public class Parser {
 
     private Map<Item, Item> propertyContent() {
         // <property-content> ::= (<key-item-pair> (TOKEN_COMMA <key-item-pair> )*
-        Map<Item, Item> ret = new HashMap<Item, Item>();
+        // 用 LinkedHashMap 保持文档里的书写顺序：写入端 mapToItem 本来就按插入顺序输出，
+        // 这里若用 HashMap，顺序在解析这一步就被打散，后面再怎么还原都补不回来
+        Map<Item, Item> ret = new LinkedHashMap<Item, Item>();
         ParseResult<KeyAndItem> nameItem = keyItemPair();
         if (!nameItem.isMatches()) {
             return ret;
