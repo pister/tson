@@ -93,6 +93,13 @@ public class Property {
                     throw new RuntimeException(e);
                 } catch (InvocationTargetException e) {
                     throw new RuntimeException(e.getTargetException());
+                } catch (IllegalArgumentException e) {
+                    // 类型不匹配。裸的 "argument type mismatch" 没有任何线索，
+                    // 带上属性名、setter 形参类型和实际值的类型，手写/版本漂移
+                    // 的数据才有得排查
+                    throw new RuntimeException("cannot set property '" + name + "' of " + owner.getClass().getName()
+                            + ": setter expects " + writeMethod.getParameterTypes()[0].getName()
+                            + ", value is " + (newValue == null ? "null" : newValue.getClass().getName() + "(" + newValue + ")"), e);
                 }
                 return null;
             }

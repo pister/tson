@@ -107,6 +107,79 @@ public class NumberPrecisionTest extends TestCase {
         assertEquals(Double.POSITIVE_INFINITY, decoded);
     }
 
+    /**
+     * 前导零超长数字必须正确解出。
+     *
+     * <p>回归 1.5 快速路径引入的崩溃：溢出守护只看数值不看位数，
+     * acc 被前导零压住不增长，永远不触发溢出守护，第 21 个数字写
+     * consumed[20] 直接 ArrayIndexOutOfBoundsException。
+     * 定宽补零的数字 ID（Excel 导出、大型机系统）就是这种形态。</p>
+     */
+    public void testLongLeadingZeros() {
+        assertEquals(1, Tsons.decode("i32@0000000000000000000001"));
+        assertEquals(Long.valueOf(-1L), Tsons.decode("i64@-00000000000000000000001"));
+        assertEquals(512, Tsons.decode("i32@0000000000000000000000000000000000000512"));
+    }
+
+    /**
+     * 窄类型整数超范围必须报错，不能静默回绕。
+     * 修复前 i8@128 byteValue() 回绕成 -128、i8@1000 回绕成 -24，
+     * 坏数据看起来像好数据。
+     */
+    public void testNarrowIntegerOutOfRangeIsRejected() {
+        assertOutOfRange("i8@128");
+        assertOutOfRange("i8@-129");
+        assertOutOfRange("i16@32768");
+        assertOutOfRange("i32@2147483648");
+        assertOutOfRange("i32@-2147483649");
+    }
+
+    /**
+     * 整数类型收到浮点/NaN 字面量必须报错，不能截断取整
+     * （修复前 i8@1.5 byteValue() 静默变 1）
+     */
+    public void testIntegerTypeRejectsFloatLiteral() {
+        assertRejected("i8@1.5", "integer");
+        assertRejected("i64@NaN", "integer");
+        assertRejected("i32@Infinity", "integer");
+    }
+
+    /**
+     * 窄类型的合法边界值（含两端）必须原样解出（守护性断言）
+     */
+    public void testNarrowIntegerBoundariesStillWork() {
+        assertEquals(Byte.valueOf((byte) 127), Tsons.decode("i8@127"));
+        assertEquals(Byte.valueOf((byte) -128), Tsons.decode("i8@-128"));
+        assertEquals(Short.valueOf((short) 32767), Tsons.decode("i16@32767"));
+        assertEquals(Integer.valueOf(2147483647), Tsons.decode("i32@2147483647"));
+        assertEquals(Long.valueOf(Long.MIN_VALUE), Tsons.decode("i64@" + Long.MIN_VALUE));
+    }
+
+    /**
+     * f32 收到超出 float 范围的有限值必须报错，不能静默饱和成 Infinity。
+     * NaN / Infinity 本身合法，照常通过（见 SpecialDoubleTest）。
+     */
+    public void testFloatOutOfRangeIsRejected() {
+        assertOutOfRange("f32@1e40");
+        assertOutOfRange("f32@-1e40");
+        // 合理范围不受影响：1e38 < Float.MAX_VALUE(约3.4e38)
+        assertEquals(1.0e38f, Tsons.decode("f32@1e38"));
+    }
+
+    private static void assertOutOfRange(String text) {
+        assertRejected(text, "out of range");
+    }
+
+    private static void assertRejected(String text, String expectedFragment) {
+        try {
+            Object decoded = Tsons.decode(text);
+            fail(text + " 本该报错却解出了: " + decoded);
+        } catch (Exception e) {
+            assertTrue("报错信息应包含 '" + expectedFragment + "': " + e.getMessage(),
+                    e.getMessage() != null && e.getMessage().contains(expectedFragment));
+        }
+    }
+
     private static void assertBitEquals(double expected, Object actual) {
         assertTrue("往返失真: 期望 " + expected + "，实际 " + actual,
                 actual instanceof Double

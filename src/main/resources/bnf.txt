@@ -20,7 +20,7 @@
 <property-content> ::= (<key-item-pair> (TOKEN_COMMA <key-item-pair> )*)?
 
 <key-item-pair> ::= <key-item-key> TOKEN_COLON <item>
-<key-item-key> ::= TOKEN_ID | <define-detail>
+<key-item-key> ::= TOKEN_ID | TOKEN_VALUE_NULL | <enum-detail> | <define-detail>
 
 <type> ::= TOKEN_TYPE_BOOL | TOKEN_TYPE_INT8 | TOKEN_TYPE_INT16 | TOKEN_TYPE_INT32 | TOKEN_TYPE_INT64 | TOKEN_TYPE_FLOAT32 | TOKEN_TYPE_FLOAT64 | TOKEN_TYPE_STRING | TOKEN_TYPE_DATE | TOKEN_TYPE_BINARY
 <value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING

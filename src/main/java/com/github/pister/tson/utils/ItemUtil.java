@@ -81,7 +81,10 @@ public final class ItemUtil {
             return new Item(ItemType.LOCAL_TIME, o);
         }
         // todo add localDate, localTime
-        if (o.getClass().isEnum()) {
+        // 带常量体的枚举常量（enum X { A { ... } }）getClass() 是匿名子类，
+        // isEnum() 返回 false，会掉进下面的 plain-object 分支编成空对象，
+        // 枚举值无声丢失。必须用 instanceof 判断，类型名取 getDeclaringClass()
+        if (o instanceof Enum) {
             return new Item(ItemType.ENUM, o, ((Enum)o).getDeclaringClass().getName());
         }
         // 只有容器才需要往下传父节点链，标量在上面已经返回了，
@@ -130,15 +133,15 @@ public final class ItemUtil {
             case CHAR:
                 return item.getValue().toString().charAt(0);
             case INT8:
-                return ((Number) item.getValue()).byteValue();
+                return (byte) requireIntInRange(item, Byte.MIN_VALUE, Byte.MAX_VALUE);
             case INT16:
-                return ((Number) item.getValue()).shortValue();
+                return (short) requireIntInRange(item, Short.MIN_VALUE, Short.MAX_VALUE);
             case INT32:
-                return ((Number) item.getValue()).intValue();
+                return (int) requireIntInRange(item, Integer.MIN_VALUE, Integer.MAX_VALUE);
             case INT64:
-                return ((Number) item.getValue()).longValue();
+                return requireIntInRange(item, Long.MIN_VALUE, Long.MAX_VALUE);
             case FLOAT32:
-                return ((Number) item.getValue()).floatValue();
+                return (float) requireDoubleInFloatRange(item);
             case FLOAT64:
                 return ((Number) item.getValue()).doubleValue();
             case BINARY:
@@ -152,6 +155,49 @@ public final class ItemUtil {
             default:
                 throw new RuntimeException("unknown type:" + item.getType());
         }
+    }
+
+    /**
+     * 窄类型整数解出的守护：必须拿到整数且在目标范围内。
+     *
+     * <p>修复前直接 byteValue()/shortValue()/intValue() 静默截断：
+     * i8@128 回绕成 -128、i8@1.5 截成 1，坏数据看起来像好数据。
+     * 编码端写出的都是真实字节，超范围只可能来自手写或损坏的文本，宁可报错。</p>
+     *
+     * <p>浮点字面量放行"数学上恰好是整数"的（i32@1e3 是既有的合法写法，
+     * 见 NumberPrecisionTest.testExponentWithoutDot），非整值或非有限值拒绝。</p>
+     */
+    private static long requireIntInRange(Item item, long min, long max) {
+        Object value = item.getValue();
+        long v;
+        if (value instanceof Long) {
+            v = (Long) value;
+        } else if (value instanceof Double) {
+            double d = (Double) value;
+            if (!Double.isFinite(d) || d != Math.rint(d)) {
+                throw new RuntimeException(item.getType().getTypeName() + "@ needs an integer, but: " + value);
+            }
+            v = (long) d;
+        } else {
+            throw new RuntimeException(item.getType().getTypeName() + "@ needs an integer, but: " + value);
+        }
+        if (v < min || v > max) {
+            throw new RuntimeException(item.getType().getTypeName() + "@" + v + " out of range [" + min + ", " + max + "]");
+        }
+        return v;
+    }
+
+    /**
+     * f32 解出的守护：有限的 double 值转 float 变 Infinite 就是超范围。
+     * NaN / Infinity 本身合法照常通过（见 SpecialDoubleTest）。
+     */
+    private static double requireDoubleInFloatRange(Item item) {
+        double d = ((Number) item.getValue()).doubleValue();
+        float f = (float) d;
+        if (Double.isFinite(d) && Float.isInfinite(f)) {
+            throw new RuntimeException(item.getType().getTypeName() + "@" + d + " out of range [" + -Float.MAX_VALUE + ", " + Float.MAX_VALUE + "]");
+        }
+        return f;
     }
 
     /**
@@ -221,7 +267,11 @@ public final class ItemUtil {
             return new ArrayWidthDimensions(array, 1);
         }
         if (data == null || data.size() == 0) {
-            return new ArrayWidthDimensions(null, 0);
+            // 空的多维数组不能返回 null：null 和空数组是两种业务语义。
+            // 内层维度未知，全零维度建出的 int[0][0] 与 new int[0][]
+            // 运行时同型同值，语义就是"该维度为空"
+            int[] emptyDimensions = new int[Math.max(dimensions, 1)];
+            return new ArrayWidthDimensions(Array.newInstance(clazzComponent, emptyDimensions));
         }
 
         List<Object> subObjects = new ArrayList<Object>(data.size());

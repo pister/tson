@@ -37,7 +37,9 @@ public final class Tsons {
     }
 
     public static Object decode(String text) {
-        if (StringUtil.isEmpty(text)) {
+        // 空串和纯空白行为要一致：都返回 null。修复前 "" 返回 null
+        // 而 "   " 走到解析器报"need a type before value"
+        if (StringUtil.isBlank(text)) {
             return null;
         }
         Lexer lexer = new Lexer(new LexerReader(new FastStringReader(text)));

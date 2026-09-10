@@ -21,9 +21,18 @@ import java.util.*;
  */
 public class Parser {
 
+    /**
+     * 结构嵌套深度上限。递归下降没有它，恶意/损坏的几千层 "[[[[..."
+     * 会把栈打爆成 StackOverflowError —— Error 不是 Exception，调用方的
+     * 常规兜底接不住，可能拖垮线程。正常数据远到不了这个深度。
+     */
+    private static final int MAX_DEPTH = 1000;
+
     private Lexer lexer;
 
     private Map<Integer, String> types;
+
+    private int depth = 0;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -46,47 +55,56 @@ public class Parser {
 
     private Item item() {
         // <item> ::= TOKEN_VALUE_NULL | TOKEN_ARRAY_PREFIX? <define-detail>
+        // item() 是每个嵌套值的必经点，深度计数在这里做。
         // null 是裸字面量，不带 type@ 前缀，必须在最前面短路掉，
         // 否则会掉进 defineWithType 报"need a type before value"
-        if (lexer.popIfMatchesType(TokenType.VALUE_NULL)) {
-            return new Item(ItemType.NULL, null);
+        if (depth >= MAX_DEPTH) {
+            throw new SyntaxException("structure nested too deeply, max depth: " + MAX_DEPTH);
         }
-        ParseResult<Item> enumResult = enumDetail();
-        if (enumResult.isMatches()) {
-            return enumResult.getValue();
-        }
-        boolean array = false;
-        int dimensions = 0;
-        ParseResult<Integer> arrayResult = arrayPrefix();
-        if (arrayResult.isMatches()) {
-            array = true;
-            dimensions = arrayResult.getValue();
-        }
-        ParseResult<ItemWithType> itemResult = defineDetail();
-        if (!itemResult.isMatches()) {
-            throw new SyntaxException("need value define");
-        }
-        ItemWithType itemWithType = itemResult.getValue();
-        Item item = itemWithType.item;
-        DefinedType definedType = itemWithType.definedType;
-        if (array) {
-            if (item.getType() == ItemType.LIST) {
-                item.setArray(true);
-                item.setArrayDimensions(dimensions);
-                if (definedType == null) {
-                    throw new SyntaxException("array must need a type");
+        depth++;
+        try {
+            if (lexer.popIfMatchesType(TokenType.VALUE_NULL)) {
+                return new Item(ItemType.NULL, null);
+            }
+            ParseResult<Item> enumResult = enumDetail();
+            if (enumResult.isMatches()) {
+                return enumResult.getValue();
+            }
+            boolean array = false;
+            int dimensions = 0;
+            ParseResult<Integer> arrayResult = arrayPrefix();
+            if (arrayResult.isMatches()) {
+                array = true;
+                dimensions = arrayResult.getValue();
+            }
+            ParseResult<ItemWithType> itemResult = defineDetail();
+            if (!itemResult.isMatches()) {
+                throw new SyntaxException("need value define");
+            }
+            ItemWithType itemWithType = itemResult.getValue();
+            Item item = itemWithType.item;
+            DefinedType definedType = itemWithType.definedType;
+            if (array) {
+                if (item.getType() == ItemType.LIST) {
+                    item.setArray(true);
+                    item.setArrayDimensions(dimensions);
+                    if (definedType == null) {
+                        throw new SyntaxException("array must need a type");
+                    }
+                    item.setArrayComponentType(definedType.itemType);
+                    item.setArrayComponentUserTypeName(definedType.userType);
+                } else {
+                    throw new SyntaxException("prefix '+' only support array size, but " + item.getValue());
                 }
-                item.setArrayComponentType(definedType.itemType);
-                item.setArrayComponentUserTypeName(definedType.userType);
             } else {
-                throw new SyntaxException("prefix '+' only support array size, but " + item.getValue());
+                if (definedType != null) {
+                    item.setUserTypeName(definedType.userType);
+                }
             }
-        } else {
-            if (definedType != null) {
-                item.setUserTypeName(definedType.userType);
-            }
+            return item;
+        } finally {
+            depth--;
         }
-        return item;
     }
 
     private ParseResult<Item> enumDetail() {
@@ -106,27 +124,42 @@ public class Parser {
             throw new SyntaxException("miss enum name define.");
         }
         int index = ((Number) typeIndexToken.getValue()).intValue();
-        String typeName = types.get(index);
-        if (typeName == null) {
-            throw new SyntaxException("can not find type for index:" + index);
-        }
+        String typeName = findUserTypeName(index);
         Object enumValue = tryCastEnum(typeName, (String) idToken.getValue());
         return ParseResult.createMatched(new Item(ItemType.ENUM, enumValue));
     }
 
+    /**
+     * 类型索引查类型名。引用了索引但文档没有 #types 头、或索引不在头里，
+     * 都在这里报语法错误 —— 修复前分别是裸 NPE 和静默丢掉用户类型。
+     */
+    private String findUserTypeName(int index) {
+        if (types == null) {
+            throw new SyntaxException("type index " + index + " referenced, but no #types header found");
+        }
+        String typeName = types.get(index);
+        if (typeName == null) {
+            throw new SyntaxException("can not find type for index:" + index);
+        }
+        return typeName;
+    }
+
     private Object tryCastEnum(String typeName, String name) {
+        Class clazz;
         try {
-            Class clazz = ClassUtil.forName(typeName);
-            if (!clazz.isEnum()) {
-                throw new RuntimeException("type '" + typeName + "' is not an enum!");
-            }
-            return EnumUtil.getEnumInstance(clazz, name);
+            clazz = ClassUtil.forName(typeName);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
-
+        if (!clazz.isEnum()) {
+            throw new RuntimeException("type '" + typeName + "' is not an enum!");
+        }
+        try {
+            return EnumUtil.getEnumInstance(clazz, name);
+        } catch (IllegalArgumentException e) {
+            // 常量名来自文本，找不到属于数据损坏，按语法错误报，带上常量名和类型名
+            throw new SyntaxException("unknown enum constant '" + name + "' for type: " + typeName);
+        }
     }
 
     private ParseResult<Integer> arrayPrefix() {
@@ -247,7 +280,7 @@ public class Parser {
                 throw new SyntaxException("need an index after #");
             }
             int index = ((Number) indexToken.getValue()).intValue();
-            String userName = types.get(index);
+            String userName = findUserTypeName(index);
             return ParseResult.createMatched(new DefinedType(null, userName));
         }
         return ParseResult.createNotMatch();
@@ -369,7 +402,7 @@ public class Parser {
     }
 
     private ParseResult<Item> keyItemKey() {
-        // <key-item-key> ::= TOKEN_ID | TOKEN_VALUE_NULL | <define-detail>
+        // <key-item-key> ::= TOKEN_ID | TOKEN_VALUE_NULL | <enum-detail> | <define-detail>
         Token idToken = lexer.nextToken();
         if (idToken.getTokenType() == TokenType.ID) {
             return ParseResult.createMatched(new Item(ItemType.STRING, idToken.getValue()));
@@ -381,6 +414,15 @@ public class Parser {
         if (idToken.getTokenType() == TokenType.PROPERTY_END) {
             // End of keyItemKey
             return ParseResult.createMatched(null);
+        }
+
+        // 编码端对枚举 key 写的就是 "!idx@NAME"（writeEnum），key 位置必须认它。
+        // 修复前 "!" 语法只在 item() 有产生式，keyItemKey 不认 —— 枚举 key 的
+        // map 从未被任何版本解开过（编码成功、解码 SyntaxException）。
+        // enumDetail 入口是 popIfMatchesType，不匹配不消费 token，先试探零风险
+        ParseResult<Item> enumResult = enumDetail();
+        if (enumResult.isMatches()) {
+            return enumResult;
         }
 
         ParseResult<ItemWithType> itemWithTypeParseResult = defineDetail();

@@ -74,6 +74,36 @@ public class ArrayFidelityTest extends TestCase {
     }
 
     /**
+     * 空的多维数组必须解出空数组，不能是 null。
+     *
+     * <p>回归：createArray 对多维 + 空数据的分支返回 null，
+     * int[0][] 编码成 "+2i32@[]" 后解码成 null —— null 和空数组
+     * 在业务语义上是两回事。</p>
+     */
+    public void testEmptyMultiDimArrayRoundTrip() {
+        int[][] empty = new int[0][];
+        Object decoded = Tsons.decode(Tsons.encode(empty));
+        assertTrue("应解出数组而不是 " + decoded, decoded instanceof int[][]);
+        assertEquals(0, ((int[][]) decoded).length);
+
+        // 手写的等价文本同样解出空数组
+        Object decoded2 = Tsons.decode("+2i32@[]");
+        assertTrue(decoded2 instanceof int[][]);
+        assertEquals(0, ((int[][]) decoded2).length);
+    }
+
+    /**
+     * 非空多维数组里的空行不受影响（守护性断言，修复前也正确）
+     */
+    public void testMultiDimArrayWithEmptyRow() {
+        int[][] a = new int[2][0];
+        Object decoded = Tsons.decode(Tsons.encode(a));
+        assertTrue(decoded instanceof int[][]);
+        assertEquals(2, ((int[][]) decoded).length);
+        assertEquals(0, ((int[][]) decoded)[0].length);
+    }
+
+    /**
      * 顺手救活存量死数据：老版本 boolean[] 编码出的 "#types{0:boolean}" 组件名，
      * 那份数据从来没有被任何版本读出来过，新解码器应当认得基本类型名
      */

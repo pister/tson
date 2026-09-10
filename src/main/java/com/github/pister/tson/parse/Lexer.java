@@ -236,7 +236,10 @@ public class Lexer {
                         break;
                     }
                     int d = p - '0';
-                    if (acc > (Long.MAX_VALUE - d) / 10) {
+                    // 溢出守护只看数值：acc 被前导零压住不增长，超长补零数字
+                    // （如定宽补零的 ID）永远不会触发它，第 21 个数字就会写穿
+                    // consumed[20]。位数到达 long 上限（19 位）同样交给通用路径。
+                    if (acc > (Long.MAX_VALUE - d) / 10 || n >= 19) {
                         overflow = true; // 含 Long.MIN 的精确边界，交给通用路径精确处理
                         break;
                     }
