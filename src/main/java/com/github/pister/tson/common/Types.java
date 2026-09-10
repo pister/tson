@@ -58,6 +58,9 @@ public final class Types {
         arrayComponentType2ItemTypes.put(Float.TYPE, ItemType.FLOAT32);
         arrayComponentType2ItemTypes.put(Double.TYPE, ItemType.FLOAT64);
         arrayComponentType2ItemTypes.put(Character.TYPE, ItemType.CHAR);
+        // Boolean.TYPE 漏注册会让 boolean[] 的组件类型当作用户类型写出，
+        // 解码 forName("boolean") 直接崩；包装类 Boolean.class 是给 Boolean[] 用的
+        arrayComponentType2ItemTypes.put(Boolean.TYPE, ItemType.BOOL);
         arrayComponentType2ItemTypes.put(String.class, ItemType.STRING);
         arrayComponentType2ItemTypes.put(Boolean.class, ItemType.BOOL);
         arrayComponentType2ItemTypes.put(Date.class, ItemType.DATE);

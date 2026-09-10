@@ -26,13 +26,34 @@ public final class ItemUtil {
 
     private static final ObjectVisitor objectVisitor = new PropertyObjectVisitor();
 
+    /**
+     * 基本类型的名字。老版本 boolean[] 的组件类型名被写成 "boolean" 走到了
+     * 用户类型路径，Class.forName 加载不了 —— 那份存量数据从来没被任何版本
+     * 读出来过，这里认得基本类型名，把它救活。
+     */
+    private static final Map<String, Class<?>> PRIMITIVE_CLASSES;
+
+    static {
+        Map<String, Class<?>> m = new HashMap<String, Class<?>>();
+        m.put("boolean", Boolean.TYPE);
+        m.put("byte", Byte.TYPE);
+        m.put("char", Character.TYPE);
+        m.put("short", Short.TYPE);
+        m.put("int", Integer.TYPE);
+        m.put("long", Long.TYPE);
+        m.put("float", Float.TYPE);
+        m.put("double", Double.TYPE);
+        PRIMITIVE_CLASSES = Collections.unmodifiableMap(m);
+    }
+
     public static Item wrapItem(Object o) {
         return wrapItemImpl(o, new ArrayList<Object>());
     }
 
     private static Item wrapItemImpl(Object o, List<Object> parents) {
         if (o == null) {
-            return null;
+            // null 也是值，返回 null 引用的话，容器只能丢弃或者写出非法文本
+            return new Item(ItemType.NULL, null);
         }
         checkCycleReference(o, parents);
         if (o instanceof String) {
@@ -122,6 +143,8 @@ public final class ItemUtil {
                 return ((Number) item.getValue()).doubleValue();
             case BINARY:
                 return item.getValue();
+            case NULL:
+                return null;
             case LIST:
                 return toListObject(item);
             case MAP:
@@ -229,10 +252,13 @@ public final class ItemUtil {
         if (item.isArray()) {
             Class<?> clazz;
             if (!StringUtil.isEmpty(item.getArrayComponentUserTypeName())) {
-                try {
-                    clazz = ClassUtil.forName(item.getArrayComponentUserTypeName());
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                clazz = PRIMITIVE_CLASSES.get(item.getArrayComponentUserTypeName());
+                if (clazz == null) {
+                    try {
+                        clazz = ClassUtil.forName(item.getArrayComponentUserTypeName());
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             } else {
                 ItemType itemType = item.getArrayComponentType();
@@ -359,7 +385,10 @@ public final class ItemUtil {
         if (itemType != null) {
             item.setArrayComponentType(itemType);
         } else {
-            item.setArrayComponentUserTypeName(arrayType.componentType.getCanonicalName());
+            // 和 userTypeNameOf 同理用 getName()：getCanonicalName() 把内部类的
+            // $ 写成 .，嵌套类的枚举数组、bean 数组会写出一个 Class.forName
+            // 加载不了的名字，那份数据从此读不回来
+            item.setArrayComponentUserTypeName(arrayType.componentType.getName());
         }
         item.setArrayDimensions(arrayType.dimensions);
         item.setArray(true);
@@ -379,9 +408,6 @@ public final class ItemUtil {
         Map<Item, Item> tsonMap = new LinkedHashMap<Item, Item>();
         for (Map.Entry<?, ?> entry : m.entrySet()) {
             Object keyObject = entry.getKey();
-            if (keyObject == null) {
-                continue;
-            }
 
             Object o = entry.getValue();
             Item value = wrapItemImpl(o, copyList(parents));

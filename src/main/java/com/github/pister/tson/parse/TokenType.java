@@ -38,6 +38,7 @@ public enum TokenType {
     VALUE_FLOAT,     // 3.14
     VALUE_TRUE,      // true
     VALUE_FALSE,     // false
+    VALUE_NULL,      // null
     VALUE_STRING,    // "xx hello"
     ;
 

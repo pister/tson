@@ -1,6 +1,7 @@
 package com.github.pister.tson.io;
 
 import com.github.pister.tson.common.Constants;
+import com.github.pister.tson.common.ItemType;
 import com.github.pister.tson.models.Item;
 import com.github.pister.tson.utils.Base629;
 import com.github.pister.tson.utils.DateTimeUtil;
@@ -15,12 +16,39 @@ import java.util.*;
 
 
 /**
+ * Item 树到 tson 文本的写出器。
+ *
+ * <p>内部实现类，外部配置请走 {@code Tsons} / {@code TsonConfig}，
+ * 不要直接使用这个类。</p>
+ *
  * Created by songlihuang on 2020/1/6.
  */
 public class ItemStringWriter {
 
+    /**
+     * 是否忽略 null（不写出 null 字面量）。true 与老版本行为一致：
+     * map 的 null value / null key 条目整个不写，list / array 的 null 元素跳过。
+     *
+     * <p>跳过意味着数据不再完整：map 丢条目，list/array 长度变化。老版本对
+     * list 里 null 元素写出的 "[a,,b]" 本来就是解不开的坏文本，这里选择跳过
+     * 至少保证输出可读。要完整保留 null，用
+     * {@code Tsons.encode(o, TsonConfig.create().setWriteNullValue(true))}。</p>
+     */
+    private final boolean ignoreNullValue;
 
-    private boolean ignoreNullValue = true;
+    /**
+     * @param ignoreNullValue true 时不写 null（老版本兼容行为）
+     */
+    public ItemStringWriter(boolean ignoreNullValue) {
+        this.ignoreNullValue = ignoreNullValue;
+    }
+
+    /**
+     * 老版本兼容默认：不写 null
+     */
+    public ItemStringWriter() {
+        this(true);
+    }
 
     private int indexSeq = 0;
 
@@ -83,6 +111,9 @@ public class ItemStringWriter {
                 break;
             case BINARY:
                 writeBinary(item);
+                break;
+            case NULL:
+                stringBuilder.append(item.getType().getTypeName());
                 break;
         }
     }
@@ -152,6 +183,9 @@ public class ItemStringWriter {
         stringBuilder.append(Constants.LIST_BEGIN);
         boolean first = true;
         for (Item subItem : list) {
+            if (ignoreNullValue && (subItem == null || subItem.getType() == ItemType.NULL)) {
+                continue;
+            }
             if (first) {
                 first = false;
             } else {
@@ -170,7 +204,11 @@ public class ItemStringWriter {
         stringBuilder.append(Constants.MAP_BEGIN);
         boolean first = true;
         for (Map.Entry<Object, Item> entry : map.entrySet()) {
-            if (ignoreNullValue && entry.getValue() == null) {
+            Item valueItem = entry.getValue();
+            Object key = entry.getKey();
+            Item keyItem = key instanceof Item ? (Item) key : null;
+            if (ignoreNullValue && (valueItem == null || valueItem.getType() == ItemType.NULL
+                    || (keyItem != null && keyItem.getType() == ItemType.NULL))) {
                 continue;
             }
             if (first) {
@@ -178,15 +216,14 @@ public class ItemStringWriter {
             } else {
                 stringBuilder.append(Constants.COMMA);
             }
-            Object key = entry.getKey();
-            if (key instanceof Item) {
-                write((Item)key);
+            if (keyItem != null) {
+                write(keyItem);
             } else {
-                stringBuilder.append(entry.getKey());
+                stringBuilder.append(key);
             }
 
             stringBuilder.append(Constants.COLON);
-            write(entry.getValue());
+            write(valueItem);
         }
         stringBuilder.append(Constants.MAP_END);
     }
@@ -268,13 +305,5 @@ public class ItemStringWriter {
         data.append("\n");
         data.append(body);
         return data.toString();
-    }
-
-    public boolean isIgnoreNullValue() {
-        return ignoreNullValue;
-    }
-
-    public void setIgnoreNullValue(boolean ignoreNullValue) {
-        this.ignoreNullValue = ignoreNullValue;
     }
 }

@@ -93,6 +93,9 @@ public class Lexer {
                 case '\"':
                     return handleString(c);
                 case '-':
+                    if (lexerReader.peek() == 'I') {
+                        return handleNegativeInfinity();
+                    }
                     return handleNumber(c);
                 case '0':
                 case '1':
@@ -207,95 +210,92 @@ public class Lexer {
             }
         }
 
+        /**
+         * 只负责把数字的原始字符收集完整，转换交给 Long.parseLong / Double.parseDouble。
+         *
+         * <p>这里以前自己累加算值，出过两类静默错值：指数前没有小数点时，
+         * E 分支没关掉整数部分状态，指数数字被拼进尾数（1e3 算成 13）；
+         * 小数和指数靠浮点累加/累乘，误差逐步放大（随机 double 往返约 86% 失真）。
+         * parseLong / parseDouble 的语义是精确定义的标准行为，没有这两类问题，
+         * 超出 long 范围也会明确报错而不是回绕成别的数。</p>
+         */
         private Token handleNumber(int c) {
-            boolean hasFloat = false;
-            boolean dealIntPart = true;
-            double floatBase = 0.1;
-            long intPart = 0;
-            double floatPart = 0;
-            long minus = 1;
-            boolean hasPowerPart = false;
-            Long powerPart = null;
-            boolean powerPartMinus = false;
-            if (c == '-') {
-                minus = -1;
-                int nextC = lexerReader.peek();
-                if (!isDigit(nextC) && nextC != '.') {
-                    return new Token(TokenType.ERROR, "need a number or a dot");
-                }
-                c = lexerReader.nextChar();
-            }
-            if (c == '.') {
-                hasFloat = true;
-                dealIntPart = false;
-                int nextC = lexerReader.peek();
-                if (!isDigit(nextC)) {
-                    return new Token(TokenType.ERROR, "need a number after dot");
-                }
-                c = lexerReader.nextChar();
-            }
-
-
-            for (; ; ) {
-                if (dealIntPart) {
-                    intPart *= 10;
-                    intPart += c - '0';
-                } else if (hasPowerPart) {
-                    if (powerPart == null) {
-                        powerPart = (long)(c - '0');
-                    } else {
-                        powerPart *= 10;
-                        powerPart += c - '0';
+            // 纯整数快速路径：直接边消费边累积，避免 StringBuilder + String +
+            // parseLong 的三重分配。数字密集的数据里绝大多数 token 走这条路。
+            // 一旦发现是浮点（后面跟 '.'/'e'/'E'）或溢出，把已消费的数字
+            // 逆序吐回，原样交给通用路径。
+            if (isDigit(c) || (c == '-' && isDigit(lexerReader.peek()))) {
+                long acc = isDigit(c) ? c - '0' : 0;
+                char[] consumed = new char[20]; // long 最多 19 位，溢出守护保证不会越界
+                int n = 0;
+                boolean overflow = false;
+                int p;
+                for (; ; ) {
+                    p = lexerReader.peek();
+                    if (!isDigit(p)) {
+                        break;
                     }
-                } else {
-                    floatPart += floatBase * (c - '0');
-                    floatBase /= 10;
-                }
-                c = lexerReader.peek();
-                if (c == '.') {
-                    if (hasFloat) {
-                        return new Token(TokenType.VALUE_FLOAT, minus * (intPart + floatPart));
-                    } else {
-                        hasFloat = true;
-                        dealIntPart = false;
-                        lexerReader.nextChar(); // pop '.'
-                        c = lexerReader.nextChar();
+                    int d = p - '0';
+                    if (acc > (Long.MAX_VALUE - d) / 10) {
+                        overflow = true; // 含 Long.MIN 的精确边界，交给通用路径精确处理
+                        break;
                     }
-                } else if (c == 'E' || c == 'e') {
-                    if (hasPowerPart) {
-                        return new Token(TokenType.ERROR, "Duplicate E part for number");
-                    } else {
-                        lexerReader.nextChar(); // pop '.'
-                        c = lexerReader.nextChar();
-                        if (c == '-') {
-                            powerPartMinus = true;
-                            c = lexerReader.nextChar();
-                        }
-                        hasPowerPart = true;
-                    }
-                } else if (!isDigit(c)) {
-                    if (powerPart != null) {
-                        double real = minus * (intPart + floatPart);
-                        if (powerPartMinus) {
-                            for (int i = 0; i < powerPart; i++) {
-                                real /= 10;
-                            }
-                        } else {
-                            for (int i = 0; i < powerPart; i++) {
-                                real *= 10;
-                            }
-                        }
-                        return new Token(TokenType.VALUE_FLOAT, real);
-                    }
-                    if (hasFloat) {
-                        return new Token(TokenType.VALUE_FLOAT, minus * (intPart + floatPart));
-                    } else {
-                        return new Token(TokenType.VALUE_INT, minus * intPart);
-                    }
-                } else {
                     lexerReader.nextChar();
+                    consumed[n++] = (char) p;
+                    acc = acc * 10 + d;
+                }
+                if (!overflow && p != '.' && p != 'e' && p != 'E') {
+                    return new Token(TokenType.VALUE_INT, c == '-' ? -acc : acc);
+                }
+                for (int i = n - 1; i >= 0; i--) {
+                    lexerReader.pushBack(consumed[i]);
                 }
             }
+            StringBuilder builder = new StringBuilder();
+            builder.append((char) c);
+            // 正负号只允许出现在 e/E 的紧后面
+            boolean expectSign = false;
+            for (; ; ) {
+                int p = lexerReader.peek();
+                if (isDigit(p) || p == '.') {
+                    builder.append((char) lexerReader.nextChar());
+                    expectSign = false;
+                } else if (p == 'e' || p == 'E') {
+                    builder.append((char) lexerReader.nextChar());
+                    expectSign = true;
+                } else if (expectSign && (p == '+' || p == '-')) {
+                    builder.append((char) lexerReader.nextChar());
+                    expectSign = false;
+                } else {
+                    break;
+                }
+            }
+            String s = builder.toString();
+            boolean isFloat = s.indexOf('.') >= 0 || s.indexOf('e') >= 0 || s.indexOf('E') >= 0;
+            try {
+                if (isFloat) {
+                    return new Token(TokenType.VALUE_FLOAT, Double.parseDouble(s));
+                }
+                return new Token(TokenType.VALUE_INT, Long.parseLong(s));
+            } catch (NumberFormatException e) {
+                return new Token(TokenType.ERROR, "illegal number: " + s);
+            }
+        }
+
+        /**
+         * 编码端写出 Double.toString(Double.NEGATIVE_INFINITY) 就是 "-Infinity"，
+         * 词法层必须认它，否则编码成功、解码抛异常。
+         * 调用到这里时 '-' 已被消费，只需读出后面的 "Infinity"。
+         */
+        private Token handleNegativeInfinity() {
+            String rest = "Infinity";
+            for (int i = 0; i < rest.length(); i++) {
+                int n = lexerReader.nextChar();
+                if (n != rest.charAt(i)) {
+                    return new Token(TokenType.ERROR, "illegal number: -" + rest.substring(0, i) + (char) n);
+                }
+            }
+            return new Token(TokenType.VALUE_FLOAT, Double.NEGATIVE_INFINITY);
         }
 
         private Token handleMark(int c) {

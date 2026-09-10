@@ -45,7 +45,12 @@ public class Parser {
     }
 
     private Item item() {
-        // <item> ::= TOKEN_ARRAY_PREFIX? <define-detail>
+        // <item> ::= TOKEN_VALUE_NULL | TOKEN_ARRAY_PREFIX? <define-detail>
+        // null 是裸字面量，不带 type@ 前缀，必须在最前面短路掉，
+        // 否则会掉进 defineWithType 报"need a type before value"
+        if (lexer.popIfMatchesType(TokenType.VALUE_NULL)) {
+            return new Item(ItemType.NULL, null);
+        }
         ParseResult<Item> enumResult = enumDetail();
         if (enumResult.isMatches()) {
             return enumResult.getValue();
@@ -364,10 +369,13 @@ public class Parser {
     }
 
     private ParseResult<Item> keyItemKey() {
-        // <key-item-key> ::= TOKEN_ID | <define-detail>
+        // <key-item-key> ::= TOKEN_ID | TOKEN_VALUE_NULL | <define-detail>
         Token idToken = lexer.nextToken();
         if (idToken.getTokenType() == TokenType.ID) {
             return ParseResult.createMatched(new Item(ItemType.STRING, idToken.getValue()));
+        }
+        if (idToken.getTokenType() == TokenType.VALUE_NULL) {
+            return ParseResult.createMatched(new Item(ItemType.NULL, null));
         }
         lexer.pushBack(idToken);
         if (idToken.getTokenType() == TokenType.PROPERTY_END) {
@@ -420,6 +428,7 @@ public class Parser {
 
     private ParseResult<Object> value() {
         // <value> ::= TOKEN_VALUE_INT | TOKEN_VALUE_FLOAT | TOKEN_VALUE_TRUE | TOKEN_VALUE_FALSE | TOKEN_VALUE_STRING
+        //           | TOKEN_ID("NaN") | TOKEN_ID("Infinity")
         Token token = lexer.nextToken();
         switch (token.getTokenType()) {
             case VALUE_INT:
@@ -430,6 +439,19 @@ public class Parser {
                 return ParseResult.createMatched((Object) Boolean.TRUE);
             case VALUE_FALSE:
                 return ParseResult.createMatched((Object) Boolean.FALSE);
+            case ID:
+                // NaN / Infinity 编码端写的就是 Double.toString 的输出，词法层是普通标识符。
+                // 只在类型值位置（type@ 之后，即走到这里）解释成浮点值；
+                // 枚举名、map key 走的是别的产生式，不受影响
+                String idName = (String) token.getValue();
+                if ("NaN".equals(idName)) {
+                    return ParseResult.createMatched((Object) Double.NaN);
+                }
+                if ("Infinity".equals(idName)) {
+                    return ParseResult.createMatched((Object) Double.POSITIVE_INFINITY);
+                }
+                lexer.pushBack(token);
+                return ParseResult.createNotMatch();
             default:
                 lexer.pushBack(token);
                 return ParseResult.createNotMatch();

@@ -27,6 +27,7 @@ public class KeyWords {
         name2keywords.put("bin", TokenType.KW_TYPE_BINARY);
         name2keywords.put("true", TokenType.VALUE_TRUE);
         name2keywords.put("false", TokenType.VALUE_FALSE);
+        name2keywords.put("null", TokenType.VALUE_NULL);
 
     }
 
